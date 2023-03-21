@@ -91,3 +91,5 @@ vendor/
 # Go workspace file
 go.work
 
+# Makefiles bin dir
+.bin/
