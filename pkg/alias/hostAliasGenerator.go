@@ -29,14 +29,14 @@ type hostAliasGenerator struct {
 	globalConfig registryContext
 }
 
-// NewHostAliasGenerator creates a generator with the ability to return host aliases from the configured internal ip, additional alias and fqdn.
+// NewHostAliasGenerator creates a generator with the ability to return host aliases from the configured internal ip, additional hosts and fqdn.
 func NewHostAliasGenerator(registry registry.Registry) *hostAliasGenerator {
 	return &hostAliasGenerator{
 		globalConfig: registry.GlobalConfig(),
 	}
 }
 
-// Generate patches the given deployment with the alias configuration provided.
+// Generate patches the given deployment with the host configuration provided.
 func (d *hostAliasGenerator) Generate() (hostAliases []v1.HostAlias, err error) {
 	hostsConfig, err := d.retrieveConfig()
 	if err != nil {
@@ -62,7 +62,7 @@ func (d *hostAliasGenerator) Generate() (hostAliases []v1.HostAlias, err error) 
 	return hostAliases, nil
 }
 
-// retrieveConfig reads alias-specific keys from the global configuration and creates a config object.
+// retrieveConfig reads hosts-specific keys from the global configuration and creates a config object.
 func (d *hostAliasGenerator) retrieveConfig() (*config, error) {
 	fqdn, err := d.retrieveFQDN()
 	if err != nil {
