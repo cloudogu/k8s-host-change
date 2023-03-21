@@ -1,5 +1,7 @@
 package main
 
-func main() {
+import "github.com/cloudogu/k8s-host-change/cmd"
 
+func main() {
+	cmd.InitAndExecute()
 }
