@@ -2,18 +2,19 @@ package dogu
 
 import (
 	"context"
+	"fmt"
+	"k8s.io/client-go/kubernetes"
 
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
-func NewDeploymentFetcher(client kubernetes.Interface) *deploymentFetcher {
-	return &deploymentFetcher{client: client}
+func NewDeploymentFetcher(clientSet kubernetes.Interface) *deploymentFetcher {
+	return &deploymentFetcher{clientSet: clientSet}
 }
 
 type deploymentFetcher struct {
-	client kubernetes.Interface
+	clientSet kubernetes.Interface
 }
 
 func (f *deploymentFetcher) FetchAll(ctx context.Context, namespace string) ([]appsv1.Deployment, error) {
@@ -28,9 +29,9 @@ func (f *deploymentFetcher) FetchAll(ctx context.Context, namespace string) ([]a
 	options := metav1.ListOptions{
 		LabelSelector: metav1.FormatLabelSelector(selector),
 	}
-	deploymentList, err := f.client.AppsV1().Deployments(namespace).List(ctx, options)
+	deploymentList, err := f.clientSet.AppsV1().Deployments(namespace).List(ctx, options)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not list deployments with selector 'dogu.name': %w", err)
 	}
 
 	return deploymentList.Items, nil

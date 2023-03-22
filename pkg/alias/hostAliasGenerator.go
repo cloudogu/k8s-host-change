@@ -40,7 +40,7 @@ func NewHostAliasGenerator(globalConfig registryContext) *hostAliasGenerator {
 func (d *hostAliasGenerator) Generate() (hostAliases []v1.HostAlias, err error) {
 	config, err := d.getGeneratorConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
 
 	if config.useInternalIP {
@@ -96,7 +96,7 @@ func (d *hostAliasGenerator) getGeneratorConfig() (*generatorConfig, error) {
 func (d *hostAliasGenerator) getFQDN() (string, error) {
 	fqdn, err := d.globalConfig.Get(fqdnKey)
 	if err != nil {
-		return "", fmt.Errorf("failed to query fqdn: %w", err)
+		return "", fmt.Errorf("failed to get value for '%s' from global config: %w", fqdnKey, err)
 	}
 
 	return fqdn, nil
@@ -105,12 +105,12 @@ func (d *hostAliasGenerator) getFQDN() (string, error) {
 func (d *hostAliasGenerator) isInternalIPUsed() (useInternalIP bool, err error) {
 	useInternalIPRaw, err := d.globalConfig.Get(useInternalIPKey)
 	if err != nil && !registry.IsKeyNotFoundError(err) {
-		return false, fmt.Errorf("failed to get internalIP flag: %w", err)
+		return false, fmt.Errorf("failed to get value for '%s' from global config: %w", useInternalIPKey, err)
 	} else if err == nil {
 		useInternalIP, err = strconv.ParseBool(useInternalIPRaw)
 		if err != nil {
-			return false, fmt.Errorf("failed to parse value '%s' of field 'k8s/use_internal_ip' "+
-				"in global generatorConfig: %w", useInternalIPRaw, err)
+			return false, fmt.Errorf("failed to parse value '%s' of field '%s' "+
+				"in global config: %w", useInternalIPRaw, useInternalIPKey, err)
 		}
 	}
 
@@ -120,7 +120,7 @@ func (d *hostAliasGenerator) isInternalIPUsed() (useInternalIP bool, err error) 
 func (d *hostAliasGenerator) getInternalIP() (internalIP net.IP, err error) {
 	internalIPRaw, err := d.globalConfig.Get(internalIPKey)
 	if err != nil && !registry.IsKeyNotFoundError(err) {
-		return nil, fmt.Errorf("failed to get internalIP: %w", err)
+		return nil, fmt.Errorf("failed to get value for field '%s' from global config: %w", internalIPKey, err)
 	} else if err == nil {
 		internalIP, err = parseInternalIP(internalIPRaw)
 		if err != nil {
@@ -150,8 +150,8 @@ func (d *hostAliasGenerator) retrieveAdditionalHosts() (map[string]string, error
 func parseInternalIP(raw string) (net.IP, error) {
 	ip := net.ParseIP(raw)
 	if ip == nil {
-		return nil, fmt.Errorf("failed to parse value '%s' of field 'k8s/internal_ip' in global generatorConfig: "+
-			"not a valid ip", raw)
+		return nil, fmt.Errorf("failed to parse value '%s' of field '%s' in global config: "+
+			"not a valid ip", raw, internalIPKey)
 	}
 
 	return ip, nil

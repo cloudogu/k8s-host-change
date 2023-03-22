@@ -32,7 +32,7 @@ func RootCmd() *cobra.Command {
 				return err
 			}
 
-			updater, err := hosts.NewHostAliasUpdater(clientSet, cesReg)
+			updater := hosts.NewHostAliasUpdater(clientSet, cesReg)
 			err = updater.UpdateHosts(ctx, namespace)
 			if err != nil {
 				return err

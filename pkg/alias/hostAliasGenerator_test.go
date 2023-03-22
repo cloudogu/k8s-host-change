@@ -96,7 +96,7 @@ func Test_hostAliasGenerator_Generate(t *testing.T) {
 
 		// then
 		require.Error(t, err)
-		assert.ErrorContains(t, err, "failed to query fqdn")
+		assert.ErrorContains(t, err, "failed to read config: failed to get value for 'fqdn' from global config")
 	})
 
 	t.Run("should fail on query internalIP flag error", func(t *testing.T) {
@@ -118,7 +118,7 @@ func Test_hostAliasGenerator_Generate(t *testing.T) {
 
 		// then
 		require.Error(t, err)
-		assert.ErrorContains(t, err, "failed to get internalIP flag")
+		assert.ErrorContains(t, err, "failed to read config: failed to get value for 'k8s/use_internal_ip' from global config")
 	})
 
 	t.Run("should fail on parse internalIP flag error", func(t *testing.T) {
@@ -140,7 +140,7 @@ func Test_hostAliasGenerator_Generate(t *testing.T) {
 
 		// then
 		require.Error(t, err)
-		assert.ErrorContains(t, err, "ailed to parse value 'no string boolean' of field 'k8s/use_internal_ip' in global generatorConfig")
+		assert.ErrorContains(t, err, "failed to read config: failed to parse value 'no string boolean' of field 'k8s/use_internal_ip' in global config")
 	})
 
 	t.Run("should fail on query internalIP error", func(t *testing.T) {
@@ -163,7 +163,7 @@ func Test_hostAliasGenerator_Generate(t *testing.T) {
 
 		// then
 		require.Error(t, err)
-		assert.ErrorContains(t, err, "failed to get internalIP")
+		assert.ErrorContains(t, err, "failed to read config: failed to get value for field 'k8s/internal_ip' from global config")
 	})
 
 	t.Run("should fail on parse internalIP error", func(t *testing.T) {
@@ -186,7 +186,7 @@ func Test_hostAliasGenerator_Generate(t *testing.T) {
 
 		// then
 		require.Error(t, err)
-		assert.ErrorContains(t, err, "failed to parse value 'fdsd2131' of field 'k8s/internal_ip' in global generatorConfig: not a valid ip")
+		assert.ErrorContains(t, err, "failed to read config: failed to parse value 'fdsd2131' of field 'k8s/internal_ip' in global config: not a valid ip")
 	})
 
 	t.Run("should fail on query additional hosts error", func(t *testing.T) {
