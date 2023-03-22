@@ -30,6 +30,7 @@ include build/make/test-unit.mk
 include build/make/static-analysis.mk
 include build/make/clean.mk
 include build/make/digital-signature.mk
+include build/make/mocks.mk
 
 K8S_POST_GENERATE_TARGETS=k8s-generate-job-resource
 include build/make/k8s.mk
