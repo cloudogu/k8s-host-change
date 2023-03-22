@@ -41,7 +41,7 @@ include build/make/k8s.mk
 build: k8s-delete image-import k8s-apply ## Builds a new version of the setup and deploys it into the K8s-EcoSystem.
 
 .PHONY: k8s-generate-job-resource
-k8s-generate-job-resource: ${BINARY_YQ} $(K8S_RESOURCE_TEMP_FOLDER) template-dev-only-image-pull-policy ## Generates the final resource yaml.
+k8s-generate-job-resource: ${BINARY_YQ} $(K8S_RESOURCE_TEMP_FOLDER) template-dev-only-image-pull-policy template-stage template-log-level ## Generates the final resource yaml.
 	@echo "Applying image transformation..."
 	@$(BINARY_YQ) -i e "(select(.kind == \"Job\").spec.template.spec.containers[]|select(.image == \"*$(ARTIFACT_ID)*\").image)=\"$(IMAGE_DEV)\"" $(K8S_RESOURCE_TEMP_YAML)
 	@echo "Done."
@@ -64,6 +64,16 @@ template-dev-only-image-pull-policy: $(BINARY_YQ)
 	@if [ ${STAGE}"X" = "development""X" ]; \
 		then echo "Setting pull policy to always for development stage!" && $(BINARY_YQ) -i e "(select(.kind == \"Job\").spec.template.spec.containers[]|select(.image == \"*$(ARTIFACT_ID)*\").imagePullPolicy)=\"Always\"" $(K8S_RESOURCE_TEMP_YAML); \
 	fi
+
+.PHONY: template-stage
+template-stage:
+	@echo "Setting STAGE env in deployment to ${STAGE}!"
+	@$(BINARY_YQ) -i e "(select(.kind == \"Deployment\").spec.template.spec.containers[]|select(.image == \"*$(ARTIFACT_ID)*\").env[]|select(.name==\"STAGE\").value)=\"${STAGE}\"" $(K8S_RESOURCE_TEMP_YAML)
+
+.PHONY: template-log-level
+template-log-level:
+	@echo "Setting LOG_LEVEL env in deployment to ${LOG_LEVEL}!"
+	@$(BINARY_YQ) -i e "(select(.kind == \"Deployment\").spec.template.spec.containers[]|select(.image == \"*$(ARTIFACT_ID)*\").env[]|select(.name==\"LOG_LEVEL\").value)=\"${LOG_LEVEL}\"" $(K8S_RESOURCE_TEMP_YAML)
 
 ##@ Release
 
