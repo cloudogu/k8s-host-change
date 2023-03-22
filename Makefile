@@ -37,6 +37,13 @@ include build/make/k8s.mk
 .PHONY: build
 build: k8s-delete image-import k8s-apply ## Builds a new version of the setup and deploys it into the K8s-EcoSystem.
 
+.PHONY: k8s-generate
+k8s-generate: ${BINARY_YQ} $(K8S_RESOURCE_TEMP_FOLDER) $(K8S_PRE_GENERATE_TARGETS) ## Generates the final resource yaml.
+	@echo "Applying general transformations..."
+	@sed -i "s/'{{ .Namespace }}'/$(NAMESPACE)/" $(K8S_RESOURCE_TEMP_YAML)
+	@$(BINARY_YQ) -i e "(select(.kind == \"Job\").spec.template.spec.containers[]|select(.image == \"*$(ARTIFACT_ID)*\").image)=\"$(IMAGE_DEV)\"" $(K8S_RESOURCE_TEMP_YAML)
+	@echo "Done."
+
 ##@ Build
 
 .PHONY: build-job
@@ -45,6 +52,13 @@ build-setup: ${SRC} compile ## Builds the setup Go binary.
 .PHONY: run
 run: ## Run a setup from your host.
 	go run ./main.go
+
+.PHONY: k8s-create-temporary-resource
+k8s-create-temporary-resource: create-temporary-release-resource template-dev-only-image-pull-policy
+
+.PHONY: create-temporary-release-resource
+create-temporary-release-resource: $(K8S_RESOURCE_TEMP_FOLDER)
+	@cp $(K8S_HOST_CHANGE_RESOURCE_YAML) $(K8S_RESOURCE_TEMP_YAML)
 
 .PHONY: template-dev-only-image-pull-policy
 template-dev-only-image-pull-policy: $(BINARY_YQ)

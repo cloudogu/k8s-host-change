@@ -1,0 +1,60 @@
+#
+# The role provides the setup with all permissions  to get, list and create new namespaces.
+#
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: k8s-host-change
+  labels:
+    app: ces
+    app.kubernetes.io/name: k8s-host-change
+rules:
+  - apiGroups:
+      - apps/v1
+    resources:
+      - deployments
+    verbs:
+      - list
+      - get
+      - update
+---
+#
+# The role binding binds our role to our service account, and, thus, gives him all permission defined
+# in that role.
+#
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: k8s-host-change
+  labels:
+    app: ces
+    app.kubernetes.io/name: k8s-host-change
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: k8s-host-change
+subjects:
+  - kind: ServiceAccount
+    name: k8s-host-change
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: k8s-host-change
+  labels:
+    app: k8s-host-change
+    app.kubernetes.io/name: k8s-host-change
+automountServiceAccountToken: true
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: k8s-host-change
+spec:
+  template:
+    spec:
+      containers:
+        - name: k8s-host-change
+          image: "cloudogu/k8s-host-change:0.0.1"
+      restartPolicy: Never
+      serviceAccountName: k8s-host-change

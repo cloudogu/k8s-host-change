@@ -89,7 +89,7 @@ node('docker') {
                 ])
             }
 
-            GString sourceJobYaml = "k8s/host-change.yaml"
+            GString sourceJobYaml = "k8s/k8s-host-change.yaml"
             stage('Update development resources') {
                 docker.image('mikefarah/yq:4.22.1')
                         .mountJenkinsUser()
@@ -135,9 +135,9 @@ void stageLintK8SResources() {
 
     docker
             .image(kubevalImage)
-            .inside("-v ${WORKSPACE}/target:/data -t --entrypoint=")
+            .inside("-v ${WORKSPACE}/k8s:/data -t --entrypoint=")
                     {
-                        sh "kubeval /data/${repositoryName}_${hostChangeVersion}.yaml --ignore-missing-schemas"
+                        sh "kubeval /data/${repositoryName}.yaml --ignore-missing-schemas"
                     }
 }
 
