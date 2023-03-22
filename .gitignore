@@ -94,4 +94,6 @@ go.work
 # Makefiles bin dir
 .bin/
 
+.env
+
 target/

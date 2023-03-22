@@ -58,3 +58,4 @@ spec:
           image: "cloudogu/k8s-host-change:0.0.1"
       restartPolicy: Never
       serviceAccountName: k8s-host-change
+  backoffLimit: 0
