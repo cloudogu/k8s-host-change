@@ -16,7 +16,7 @@ goVersion = "1.20"
 
 // Configuration of repository
 repositoryOwner = "cloudogu"
-repositoryName = "k8s-host-change "
+repositoryName = "k8s-host-change"
 project = "github.com/${repositoryOwner}/${repositoryName}"
 
 // Configuration of branches
