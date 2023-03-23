@@ -7,6 +7,7 @@ import (
 	"github.com/cloudogu/k8s-host-change/pkg/deployment"
 	"github.com/cloudogu/k8s-host-change/pkg/dogu"
 	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type hostAliasUpdater struct {
@@ -27,10 +28,13 @@ var NewHostAliasUpdater = func(clientSet kubernetes.Interface, cesReg cesRegistr
 
 // UpdateHosts updates all dogu deployments with host information like fqdn, internal ip and additional hosts from ces registry.
 func (hau *hostAliasUpdater) UpdateHosts(ctx context.Context, namespace string) error {
+	logger := log.FromContext(ctx)
+	logger.Info("Update host entries in dogu deployments")
 	hostAliases, err := hau.generator.Generate()
 	if err != nil {
 		return fmt.Errorf("failed to generate host aliases: %w", err)
 	}
+	logger.Info("Use aliases: %s", hostAliases)
 
 	deployments, err := hau.fetcher.FetchAll(ctx, namespace)
 	if err != nil {
@@ -39,6 +43,7 @@ func (hau *hostAliasUpdater) UpdateHosts(ctx context.Context, namespace string) 
 
 	hau.patcher.Patch(deployments, hostAliases)
 
+	logger.Info("Update deployments")
 	err = hau.updater.Update(ctx, namespace, deployments)
 	if err != nil {
 		return fmt.Errorf("failed to update host-aliases of dogu deployments in cluster: %w", err)
