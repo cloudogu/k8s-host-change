@@ -1,9 +1,15 @@
 package main
 
 import (
-	"github.com/cloudogu/k8s-host-change/cmd"
+	"context"
+	"github.com/cloudogu/k8s-host-change/pkg/hosts"
+	"github.com/cloudogu/k8s-host-change/pkg/initializer"
 	"github.com/cloudogu/k8s-host-change/pkg/logging"
+	"os"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
+
+var logger = ctrl.Log.WithName("k8s-host-change")
 
 func init() {
 	if err := logging.ConfigureLogger(); err != nil {
@@ -12,5 +18,27 @@ func init() {
 }
 
 func main() {
-	cmd.InitAndExecute()
+	init := initializer.New()
+	namespace := init.GetNamespace()
+
+	clientSet, err := init.CreateClientSet()
+	if err != nil {
+		handleError(err)
+	}
+
+	cesReg, err := init.CreateCesRegistry()
+	if err != nil {
+		handleError(err)
+	}
+
+	updater := hosts.NewHostAliasUpdater(clientSet, cesReg)
+	err = updater.UpdateHosts(context.Background(), namespace)
+	if err != nil {
+		handleError(err)
+	}
+}
+
+func handleError(err error) {
+	logger.Error(err, "exit k8s-host-change")
+	os.Exit(1)
 }

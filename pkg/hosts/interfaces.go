@@ -19,10 +19,6 @@ type doguDeploymentFetcher interface {
 	FetchAll(ctx context.Context, namespace string) ([]appsv1.Deployment, error)
 }
 
-type hostAliasPatcher interface {
-	Patch(deployments []appsv1.Deployment, aliases []corev1.HostAlias)
-}
-
 type deploymentUpdater interface {
-	Update(ctx context.Context, namespace string, deployments []appsv1.Deployment) error
+	UpdateHostAliases(ctx context.Context, namespace string, deployments []appsv1.Deployment, aliases []corev1.HostAlias) error
 }

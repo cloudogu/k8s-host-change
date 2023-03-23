@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
@@ -30,6 +31,7 @@ func Test_updater_Update(t *testing.T) {
 		ctx         context.Context
 		namespace   string
 		deployments []appsv1.Deployment
+		hostAliases []corev1.HostAlias
 	}
 	tests := []struct {
 		name      string
@@ -38,7 +40,7 @@ func Test_updater_Update(t *testing.T) {
 		wantErr   func(t *testing.T, err error)
 	}{
 		{
-			name:      "should fail once",
+			name:      "should fail once because deployment is not found",
 			clientSet: fake.NewSimpleClientset(),
 			args: args{
 				ctx:       context.TODO(),
@@ -52,7 +54,7 @@ func Test_updater_Update(t *testing.T) {
 			wantErr: func(t *testing.T, err error) {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, "1 error occurred")
-				assert.ErrorContains(t, err, "failed to update deployment 'will-not-be-found': deployments.apps \"will-not-be-found\" not found")
+				assert.ErrorContains(t, err, "failed to get deployment 'will-not-be-found': deployments.apps \"will-not-be-found\" not found")
 			},
 		},
 		{
@@ -87,8 +89,8 @@ func Test_updater_Update(t *testing.T) {
 			wantErr: func(t *testing.T, err error) {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, "2 errors occurred")
-				assert.ErrorContains(t, err, "failed to update deployment 'will-not-be-found': deployments.apps \"will-not-be-found\" not found")
-				assert.ErrorContains(t, err, "failed to update deployment 'will-not-be-found-either': deployments.apps \"will-not-be-found-either\" not found")
+				assert.ErrorContains(t, err, "failed to get deployment 'will-not-be-found': deployments.apps \"will-not-be-found\" not found")
+				assert.ErrorContains(t, err, "failed to get deployment 'will-not-be-found-either': deployments.apps \"will-not-be-found-either\" not found")
 			},
 		},
 		{
@@ -133,7 +135,7 @@ func Test_updater_Update(t *testing.T) {
 			u := &updater{
 				clientSet: tt.clientSet,
 			}
-			err := u.Update(tt.args.ctx, tt.args.namespace, tt.args.deployments)
+			err := u.UpdateHostAliases(tt.args.ctx, tt.args.namespace, tt.args.deployments, tt.args.hostAliases)
 			tt.wantErr(t, err)
 		})
 	}

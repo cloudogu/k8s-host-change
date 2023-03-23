@@ -13,15 +13,14 @@ import (
 type hostAliasUpdater struct {
 	generator hostAliasGenerator
 	fetcher   doguDeploymentFetcher
-	patcher   hostAliasPatcher
 	updater   deploymentUpdater
 }
 
+// NewHostAliasUpdater is used to create a new instance of hostAliasUpdater.
 var NewHostAliasUpdater = func(clientSet kubernetes.Interface, cesReg cesRegistry) *hostAliasUpdater {
 	return &hostAliasUpdater{
 		generator: alias.NewHostAliasGenerator(cesReg.GlobalConfig()),
 		fetcher:   dogu.NewDeploymentFetcher(clientSet),
-		patcher:   deployment.NewHostAliasPatcher(),
 		updater:   deployment.NewUpdater(clientSet),
 	}
 }
@@ -34,17 +33,20 @@ func (hau *hostAliasUpdater) UpdateHosts(ctx context.Context, namespace string) 
 	if err != nil {
 		return fmt.Errorf("failed to generate host aliases: %w", err)
 	}
-	logger.Info("Use aliases: %s", hostAliases)
+	if len(hostAliases) > 0 {
+		logger.Info(fmt.Sprintf("Use aliases: %s", hostAliases))
+	} else {
+		logger.Info("Delete all aliases from dogu deployments")
+	}
 
+	logger.Info("Fetch all dogu deployments")
 	deployments, err := hau.fetcher.FetchAll(ctx, namespace)
 	if err != nil {
 		return fmt.Errorf("failed to fetch dogu deployments: %w", err)
 	}
 
-	hau.patcher.Patch(deployments, hostAliases)
-
-	logger.Info("Update deployments")
-	err = hau.updater.Update(ctx, namespace, deployments)
+	logger.Info("Update deployments with host aliases")
+	err = hau.updater.UpdateHostAliases(ctx, namespace, deployments, hostAliases)
 	if err != nil {
 		return fmt.Errorf("failed to update host-aliases of dogu deployments in cluster: %w", err)
 	}

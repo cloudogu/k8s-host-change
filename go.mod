@@ -8,7 +8,6 @@ require (
 	github.com/go-logr/logr v1.2.3
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/sirupsen/logrus v1.8.1
-	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
 	k8s.io/api v0.26.3
 	k8s.io/apimachinery v0.26.3
@@ -39,7 +38,6 @@ require (
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/imdario/mergo v0.3.6 // indirect
-	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect

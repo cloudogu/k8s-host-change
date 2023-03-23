@@ -5,7 +5,10 @@ package hosts
 import (
 	context "context"
 
+	corev1 "k8s.io/api/core/v1"
+
 	mock "github.com/stretchr/testify/mock"
+
 	v1 "k8s.io/api/apps/v1"
 )
 
@@ -22,13 +25,13 @@ func (_m *mockDeploymentUpdater) EXPECT() *mockDeploymentUpdater_Expecter {
 	return &mockDeploymentUpdater_Expecter{mock: &_m.Mock}
 }
 
-// Update provides a mock function with given fields: ctx, namespace, deployments
-func (_m *mockDeploymentUpdater) Update(ctx context.Context, namespace string, deployments []v1.Deployment) error {
-	ret := _m.Called(ctx, namespace, deployments)
+// UpdateHostAliases provides a mock function with given fields: ctx, namespace, deployments, aliases
+func (_m *mockDeploymentUpdater) UpdateHostAliases(ctx context.Context, namespace string, deployments []v1.Deployment, aliases []corev1.HostAlias) error {
+	ret := _m.Called(ctx, namespace, deployments, aliases)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, []v1.Deployment) error); ok {
-		r0 = rf(ctx, namespace, deployments)
+	if rf, ok := ret.Get(0).(func(context.Context, string, []v1.Deployment, []corev1.HostAlias) error); ok {
+		r0 = rf(ctx, namespace, deployments, aliases)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -36,32 +39,33 @@ func (_m *mockDeploymentUpdater) Update(ctx context.Context, namespace string, d
 	return r0
 }
 
-// mockDeploymentUpdater_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
-type mockDeploymentUpdater_Update_Call struct {
+// mockDeploymentUpdater_UpdateHostAliases_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateHostAliases'
+type mockDeploymentUpdater_UpdateHostAliases_Call struct {
 	*mock.Call
 }
 
-// Update is a helper method to define mock.On call
+// UpdateHostAliases is a helper method to define mock.On call
 //   - ctx context.Context
 //   - namespace string
 //   - deployments []v1.Deployment
-func (_e *mockDeploymentUpdater_Expecter) Update(ctx interface{}, namespace interface{}, deployments interface{}) *mockDeploymentUpdater_Update_Call {
-	return &mockDeploymentUpdater_Update_Call{Call: _e.mock.On("Update", ctx, namespace, deployments)}
+//   - aliases []corev1.HostAlias
+func (_e *mockDeploymentUpdater_Expecter) UpdateHostAliases(ctx interface{}, namespace interface{}, deployments interface{}, aliases interface{}) *mockDeploymentUpdater_UpdateHostAliases_Call {
+	return &mockDeploymentUpdater_UpdateHostAliases_Call{Call: _e.mock.On("UpdateHostAliases", ctx, namespace, deployments, aliases)}
 }
 
-func (_c *mockDeploymentUpdater_Update_Call) Run(run func(ctx context.Context, namespace string, deployments []v1.Deployment)) *mockDeploymentUpdater_Update_Call {
+func (_c *mockDeploymentUpdater_UpdateHostAliases_Call) Run(run func(ctx context.Context, namespace string, deployments []v1.Deployment, aliases []corev1.HostAlias)) *mockDeploymentUpdater_UpdateHostAliases_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].([]v1.Deployment))
+		run(args[0].(context.Context), args[1].(string), args[2].([]v1.Deployment), args[3].([]corev1.HostAlias))
 	})
 	return _c
 }
 
-func (_c *mockDeploymentUpdater_Update_Call) Return(_a0 error) *mockDeploymentUpdater_Update_Call {
+func (_c *mockDeploymentUpdater_UpdateHostAliases_Call) Return(_a0 error) *mockDeploymentUpdater_UpdateHostAliases_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *mockDeploymentUpdater_Update_Call) RunAndReturn(run func(context.Context, string, []v1.Deployment) error) *mockDeploymentUpdater_Update_Call {
+func (_c *mockDeploymentUpdater_UpdateHostAliases_Call) RunAndReturn(run func(context.Context, string, []v1.Deployment, []corev1.HostAlias) error) *mockDeploymentUpdater_UpdateHostAliases_Call {
 	_c.Call.Return(run)
 	return _c
 }
