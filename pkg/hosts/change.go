@@ -76,14 +76,8 @@ func (hau *hostAliasUpdater) rollback(ctx context.Context, namespace string, pre
 		return fmt.Errorf("failed to fetch dogu deployments on rollback: %w", err)
 	}
 
-	for i, deploy := range deployments {
-		aliases, exists := previousHostAliases[deploy.Name]
-		if exists {
-			deployments[i].Spec.Template.Spec.HostAliases = aliases
-		}
-	}
-
-	err = hau.updater.Update(ctx, namespace, deployments)
+	// We can select the aliases by the first deployment name because all host aliases must be equal.
+	err = hau.updater.UpdateHostAliases(ctx, namespace, deployments, previousHostAliases[deployments[0].Name])
 	if err != nil {
 		return fmt.Errorf("failed to rollback dogu deployments: %w", err)
 	}

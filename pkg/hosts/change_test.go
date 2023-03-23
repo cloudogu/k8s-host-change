@@ -2,6 +2,7 @@ package hosts
 
 import (
 	"context"
+	"github.com/stretchr/testify/mock"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -69,13 +70,11 @@ func Test_hostAliasUpdater_UpdateHosts(t *testing.T) {
 		// given
 		generator := succeedingHostAliasGenerator(t)
 		fetcher := succeedingDoguDeploymentFetcherOnRollback(t)
-		patcher := createHostAliasPatcher(t)
 		updater := failingDeploymentUpdater(t)
 		ctx := context.TODO()
 		sut := &hostAliasUpdater{
 			generator: generator,
 			fetcher:   fetcher,
-			patcher:   patcher,
 			updater:   updater,
 		}
 
@@ -91,13 +90,11 @@ func Test_hostAliasUpdater_UpdateHosts(t *testing.T) {
 		// given
 		generator := succeedingHostAliasGenerator(t)
 		fetcher := failingDoguDeploymentFetcherOnRollback(t)
-		patcher := createHostAliasPatcher(t)
 		updater := failingDeploymentUpdaterCallOnce(t)
 		ctx := context.TODO()
 		sut := &hostAliasUpdater{
 			generator: generator,
 			fetcher:   fetcher,
-			patcher:   patcher,
 			updater:   updater,
 		}
 
@@ -114,13 +111,11 @@ func Test_hostAliasUpdater_UpdateHosts(t *testing.T) {
 		// given
 		generator := succeedingHostAliasGenerator(t)
 		fetcher := succeedingDoguDeploymentFetcherOnRollback(t)
-		patcher := createHostAliasPatcher(t)
 		updater := failingDeploymentUpdaterOnRollback(t)
 		ctx := context.TODO()
 		sut := &hostAliasUpdater{
 			generator: generator,
 			fetcher:   fetcher,
-			patcher:   patcher,
 			updater:   updater,
 		}
 
@@ -137,13 +132,11 @@ func Test_hostAliasUpdater_UpdateHosts(t *testing.T) {
 		// given
 		generator := succeedingHostAliasGenerator(t)
 		fetcher := succeedingDoguDeploymentFetcher(t)
-		patcher := createHostAliasPatcher(t)
 		updater := succeedingDeploymentUpdater(t)
 		ctx := context.TODO()
 		sut := &hostAliasUpdater{
 			generator: generator,
 			fetcher:   fetcher,
-			patcher:   patcher,
 			updater:   updater,
 		}
 
@@ -199,40 +192,33 @@ func failingDoguDeploymentFetcherOnRollback(t *testing.T) doguDeploymentFetcher 
 	return fetcher
 }
 
-func createHostAliasPatcher(t *testing.T) hostAliasPatcher {
-	t.Helper()
-	patcher := newMockHostAliasPatcher(t)
-	patcher.EXPECT().Patch(doguDeployments, hostAliases).Return().Once()
-	return patcher
-}
-
 func failingDeploymentUpdater(t *testing.T) deploymentUpdater {
 	t.Helper()
 	updater := newMockDeploymentUpdater(t)
-	updater.EXPECT().Update(context.TODO(), testNamespace, doguDeployments).Return(assert.AnError).Once()
-	updater.EXPECT().Update(context.TODO(), testNamespace, doguDeployments).Return(nil).Once()
+	updater.EXPECT().UpdateHostAliases(context.TODO(), testNamespace, doguDeployments, hostAliases).Return(assert.AnError).Once()
+	updater.EXPECT().UpdateHostAliases(context.TODO(), testNamespace, doguDeployments, mock.Anything).Return(nil).Once()
 	return updater
 }
 
 func failingDeploymentUpdaterCallOnce(t *testing.T) deploymentUpdater {
 	t.Helper()
 	updater := newMockDeploymentUpdater(t)
-	updater.EXPECT().Update(context.TODO(), testNamespace, doguDeployments).Return(assert.AnError).Once()
+	updater.EXPECT().UpdateHostAliases(context.TODO(), testNamespace, doguDeployments, hostAliases).Return(assert.AnError).Once()
 	return updater
 }
 
 func failingDeploymentUpdaterOnRollback(t *testing.T) deploymentUpdater {
 	t.Helper()
 	updater := newMockDeploymentUpdater(t)
-	updater.EXPECT().Update(context.TODO(), testNamespace, doguDeployments).Return(assert.AnError).Once()
-	updater.EXPECT().Update(context.TODO(), testNamespace, doguDeployments).Return(assert.AnError).Once()
+	updater.EXPECT().UpdateHostAliases(context.TODO(), testNamespace, doguDeployments, hostAliases).Return(assert.AnError).Once()
+	updater.EXPECT().UpdateHostAliases(context.TODO(), testNamespace, doguDeployments, mock.Anything).Return(assert.AnError).Once()
 	return updater
 }
 
 func succeedingDeploymentUpdater(t *testing.T) deploymentUpdater {
 	t.Helper()
 	updater := newMockDeploymentUpdater(t)
-	updater.EXPECT().Update(context.TODO(), testNamespace, doguDeployments).Return(nil).Once()
+	updater.EXPECT().UpdateHostAliases(context.TODO(), testNamespace, doguDeployments, hostAliases).Return(nil).Once()
 	return updater
 }
 
