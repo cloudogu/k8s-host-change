@@ -13,6 +13,7 @@ Attention this change causes all dogus to be restarted.
 
 Download and apply the job resources:
 
+<!-- markdown-link-check-disable -->
 [YAML resources](https://dogu.cloudogu.com/api/v1/k8s/k8s/k8s-host-change)
 
 ```bash

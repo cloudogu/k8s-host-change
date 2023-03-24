@@ -13,6 +13,7 @@ Achtung diese Änderung bewirkt, dass alle Dogus neu gestartet werden.
 
 Download und Anwendung der Job-Ressourcen:
 
+<!-- markdown-link-check-disable -->
 [YAML-Ressourcen](https://dogu.cloudogu.com/api/v1/k8s/k8s/k8s-host-change)
 
 ```bash
