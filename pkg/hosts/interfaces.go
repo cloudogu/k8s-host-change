@@ -2,13 +2,12 @@ package hosts
 
 import (
 	"context"
-	"github.com/cloudogu/cesapp-lib/registry"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
 
-type cesRegistry interface {
-	registry.Registry
+type HostAliasUpdater interface {
+	UpdateHosts(ctx context.Context, namespace string) error
 }
 
 type hostAliasGenerator interface {

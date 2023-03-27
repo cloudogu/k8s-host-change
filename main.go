@@ -18,24 +18,33 @@ func init() {
 }
 
 func main() {
+	err := run()
+	if err != nil {
+		handleError(err)
+	}
+}
+
+func run() error {
 	init := initializer.New()
 	namespace := init.GetNamespace()
 
 	clientSet, err := init.CreateClientSet()
 	if err != nil {
-		handleError(err)
+		return err
 	}
 
 	cesReg, err := init.CreateCesRegistry()
 	if err != nil {
-		handleError(err)
+		return err
 	}
 
 	updater := hosts.NewHostAliasUpdater(clientSet, cesReg)
 	err = updater.UpdateHosts(context.Background(), namespace)
 	if err != nil {
-		handleError(err)
+		return err
 	}
+
+	return nil
 }
 
 func handleError(err error) {
