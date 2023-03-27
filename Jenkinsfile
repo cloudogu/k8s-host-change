@@ -31,6 +31,10 @@ node('docker') {
             make 'clean'
         }
 
+        stage('Lint') {
+            lintDockerfile()
+        }
+
         stage('Check Markdown Links') {
             Markdown markdown = new Markdown(this)
             markdown.check()
@@ -49,6 +53,10 @@ node('docker') {
                                 make 'unit-test'
                                 junit allowEmptyResults: true, testResults: 'target/unit-tests/*-tests.xml'
                             }
+
+                            stage("Review dog analysis") {
+                                stageStaticAnalysisReviewDog()
+                            }
                         }
 
         stage("Lint k8s Resources") {
@@ -59,55 +67,7 @@ node('docker') {
             stageStaticAnalysisSonarQube()
         }
 
-        K3d k3d = new K3d(this, "${WORKSPACE}", "${WORKSPACE}/k3d", env.PATH)
-
-        try {
-            Makefile makefile = new Makefile(this)
-            String hostChangeVersion = makefile.getVersion()
-
-            stage('Set up k3d cluster') {
-                k3d.startK3d()
-            }
-
-            def imageName
-            stage('Build & Push Image') {
-                imageName = k3d.buildAndPushToLocalRegistry("cloudogu/${repositoryName}", hostChangeVersion)
-            }
-
-            stage('Setup') {
-                k3d.setup("v0.12.0", [
-                        dependencies: ["official/postfix"],
-                        defaultDogu : ""
-                ])
-            }
-
-            GString sourceJobYaml = "k8s/k8s-host-change.yaml"
-            stage('Update development resources') {
-                docker.image('mikefarah/yq:4.22.1')
-                        .mountJenkinsUser()
-                        .inside("--volume ${WORKSPACE}:/workdir -w /workdir") {
-                            sh "yq -i '(select(.kind == \"Job\").spec.template.spec.containers[]|select(.name == \"k8s-host-change\")).image=\"${imageName}\"' ${sourceJobYaml}"
-                        }
-            }
-
-            stage('Deploy host-change Job') {
-                k3d.kubectl("apply -f ${sourceJobYaml}")
-            }
-
-            stage('Wait for Ready Rollout') {
-                k3d.kubectl("--namespace default wait --for=condition=Ready pods --all")
-            }
-
-            stage('Restore development resources') {
-                sh "git restore ${sourceJobYaml}"
-            }
-
-            stageAutomaticRelease()
-        } finally {
-            stage('Remove k3d cluster') {
-                k3d.deleteK3d()
-            }
-        }
+        stageAutomaticRelease()
     }
 }
 
@@ -122,9 +82,6 @@ void gitWithCredentials(String command) {
 
 void stageLintK8SResources() {
     String kubevalImage = "cytopia/kubeval:0.13"
-    Makefile makefile = new Makefile(this)
-    String hostChangeVersion = makefile.getVersion()
-
     docker
             .image(kubevalImage)
             .inside("-v ${WORKSPACE}/k8s:/data -t --entrypoint=")
