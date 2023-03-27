@@ -1,6 +1,6 @@
 # Set these to the desired values
 ARTIFACT_ID=k8s-host-change
-VERSION=0.0.1
+VERSION=0.1.0
 
 GOTAG?=1.20.2
 MAKEFILES_VERSION=7.5.0
@@ -78,6 +78,6 @@ template-log-level:
 ##@ Release
 
 .PHONY: job-release
-setup-release: ## Interactively starts the release workflow.
+job-release: ## Interactively starts the release workflow.
 	@echo "Starting git flow release..."
 	@build/make/release.sh host-change
