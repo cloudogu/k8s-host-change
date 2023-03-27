@@ -78,6 +78,6 @@ template-log-level:
 ##@ Release
 
 .PHONY: job-release
-setup-release: ## Interactively starts the release workflow.
+job-release: ## Interactively starts the release workflow.
 	@echo "Starting git flow release..."
 	@build/make/release.sh host-change
