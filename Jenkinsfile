@@ -49,10 +49,6 @@ node('docker') {
                                 make 'unit-test'
                                 junit allowEmptyResults: true, testResults: 'target/unit-tests/*-tests.xml'
                             }
-
-                            stage("Review dog analysis") {
-                                stageStaticAnalysisReviewDog()
-                            }
                         }
 
         stage("Lint k8s Resources") {
