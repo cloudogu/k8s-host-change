@@ -83,6 +83,7 @@ func getLogLevelFromEnv() (logrus.Level, error) {
 	return level, nil
 }
 
+// ConfigureLogger sets the logrus logger as for all logging implementations from the controller-runtime.
 func ConfigureLogger() error {
 	level, err := getLogLevelFromEnv()
 	if err != nil {
