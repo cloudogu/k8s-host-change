@@ -9,6 +9,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
+const namespaceEnvName = "NAMESPACE"
+
 type initializer struct {
 }
 
@@ -17,8 +19,8 @@ var New = func() *initializer {
 }
 
 func (i *initializer) GetNamespace() string {
-	env, present := os.LookupEnv("NAMESPACE")
-	if present {
+	env, present := os.LookupEnv(namespaceEnvName)
+	if present && env != "" {
 		return env
 	}
 
