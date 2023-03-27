@@ -58,6 +58,7 @@ run: ## Run a setup from your host.
 .PHONY: k8s-create-temporary-resource
 k8s-create-temporary-resource: $(K8S_RESOURCE_TEMP_FOLDER)
 	@cp $(K8S_HOST_CHANGE_RESOURCE_YAML) $(K8S_RESOURCE_TEMP_YAML)
+	@sed -i "s/'{{ .Version }}'/$(VERSION)/" $(K8S_RESOURCE_TEMP_YAML)
 
 .PHONY: template-dev-only-image-pull-policy
 template-dev-only-image-pull-policy: $(BINARY_YQ)
