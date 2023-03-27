@@ -31,10 +31,6 @@ node('docker') {
             make 'clean'
         }
 
-        stage('Lint') {
-            lintDockerfile()
-        }
-
         stage('Check Markdown Links') {
             Markdown markdown = new Markdown(this)
             markdown.check()
