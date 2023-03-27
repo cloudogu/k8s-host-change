@@ -77,7 +77,7 @@ func Test_initializer_CreateClientSet(t *testing.T) {
 		ctrl.GetConfigOrDie = func() *rest.Config {
 			return &rest.Config{}
 		}
-		sut := initializer{}
+		sut := defaultInitializer{}
 
 		// when
 		clientSet, err := sut.CreateClientSet()
@@ -95,7 +95,7 @@ func Test_initializer_CreateClientSet(t *testing.T) {
 		ctrl.GetConfigOrDie = func() *rest.Config {
 			return &rest.Config{ExecProvider: &api.ExecConfig{}, AuthProvider: &api.AuthProviderConfig{}}
 		}
-		sut := initializer{}
+		sut := defaultInitializer{}
 
 		// when
 		_, err := sut.CreateClientSet()

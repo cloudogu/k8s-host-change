@@ -3,6 +3,7 @@ package hosts
 import (
 	"context"
 	"fmt"
+	"github.com/cloudogu/cesapp-lib/registry"
 
 	"github.com/hashicorp/go-multierror"
 	corev1 "k8s.io/api/core/v1"
@@ -14,15 +15,15 @@ import (
 	"github.com/cloudogu/k8s-host-change/pkg/dogu"
 )
 
-type hostAliasUpdater struct {
+type defaultHostAliasUpdater struct {
 	generator hostAliasGenerator
 	fetcher   doguDeploymentFetcher
 	updater   deploymentUpdater
 }
 
-// NewHostAliasUpdater is used to create a new instance of hostAliasUpdater.
-var NewHostAliasUpdater = func(clientSet kubernetes.Interface, cesReg cesRegistry) *hostAliasUpdater {
-	return &hostAliasUpdater{
+// NewHostAliasUpdater is used to create a new instance of defaultHostAliasUpdater.
+var NewHostAliasUpdater = func(clientSet kubernetes.Interface, cesReg registry.Registry) HostAliasUpdater {
+	return &defaultHostAliasUpdater{
 		generator: alias.NewHostAliasGenerator(cesReg.GlobalConfig()),
 		fetcher:   dogu.NewDeploymentFetcher(clientSet),
 		updater:   deployment.NewUpdater(clientSet),
@@ -30,7 +31,7 @@ var NewHostAliasUpdater = func(clientSet kubernetes.Interface, cesReg cesRegistr
 }
 
 // UpdateHosts updates all dogu deployments with host information like fqdn, internal ip and additional hosts from ces registry.
-func (hau *hostAliasUpdater) UpdateHosts(ctx context.Context, namespace string) error {
+func (hau *defaultHostAliasUpdater) UpdateHosts(ctx context.Context, namespace string) error {
 	logger := log.FromContext(ctx)
 	logger.Info("Update host entries in dogu deployments")
 	hostAliases, err := hau.generator.Generate()
@@ -70,7 +71,7 @@ func (hau *hostAliasUpdater) UpdateHosts(ctx context.Context, namespace string) 
 	return nil
 }
 
-func (hau *hostAliasUpdater) rollback(ctx context.Context, namespace string, previousHostAliases map[string][]corev1.HostAlias) error {
+func (hau *defaultHostAliasUpdater) rollback(ctx context.Context, namespace string, previousHostAliases map[string][]corev1.HostAlias) error {
 	deployments, err := hau.fetcher.FetchAll(ctx, namespace)
 	if err != nil {
 		return fmt.Errorf("failed to fetch dogu deployments on rollback: %w", err)

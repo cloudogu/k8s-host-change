@@ -11,14 +11,20 @@ import (
 
 const namespaceEnvName = "NAMESPACE"
 
-type initializer struct {
+type Initializer interface {
+	GetNamespace() string
+	CreateClientSet() (kubernetes.Interface, error)
+	CreateCesRegistry() (registry.Registry, error)
 }
 
-var New = func() *initializer {
-	return &initializer{}
+type defaultInitializer struct {
 }
 
-func (i *initializer) GetNamespace() string {
+var New = func() Initializer {
+	return &defaultInitializer{}
+}
+
+func (i *defaultInitializer) GetNamespace() string {
 	env, present := os.LookupEnv(namespaceEnvName)
 	if present && env != "" {
 		return env
@@ -27,7 +33,7 @@ func (i *initializer) GetNamespace() string {
 	return "default"
 }
 
-func (i *initializer) CreateClientSet() (kubernetes.Interface, error) {
+func (i *defaultInitializer) CreateClientSet() (kubernetes.Interface, error) {
 	restConfig := ctrl.GetConfigOrDie()
 	clientSet, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {
@@ -37,7 +43,7 @@ func (i *initializer) CreateClientSet() (kubernetes.Interface, error) {
 	return clientSet, nil
 }
 
-func (i *initializer) CreateCesRegistry() (registry.Registry, error) {
+func (i *defaultInitializer) CreateCesRegistry() (registry.Registry, error) {
 	namespace := i.GetNamespace()
 	cesReg, err := registry.New(core.Registry{
 		Type:      "etcd",
