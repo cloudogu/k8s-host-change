@@ -15,6 +15,7 @@ type hostAliasGenerator interface {
 }
 
 type doguDeploymentFetcher interface {
+	// FetchAll retrieves all dogu deployments in a given namespace.
 	FetchAll(ctx context.Context, namespace string) ([]appsv1.Deployment, error)
 }
 
