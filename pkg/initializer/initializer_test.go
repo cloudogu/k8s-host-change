@@ -1,12 +1,13 @@
 package initializer
 
 import (
+	"os"
+	"testing"
+
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd/api"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

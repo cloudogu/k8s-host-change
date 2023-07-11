@@ -1,11 +1,13 @@
 package alias
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/utils/strings/slices"
-	"testing"
 )
 
 func Test_hostAliasGenerator_Generate(t *testing.T) {
