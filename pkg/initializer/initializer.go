@@ -2,11 +2,13 @@ package initializer
 
 import (
 	"fmt"
+	"os"
+
+	"k8s.io/client-go/kubernetes"
+	ctrl "sigs.k8s.io/controller-runtime"
+
 	"github.com/cloudogu/cesapp-lib/core"
 	"github.com/cloudogu/cesapp-lib/registry"
-	"k8s.io/client-go/kubernetes"
-	"os"
-	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 const namespaceEnvName = "NAMESPACE"

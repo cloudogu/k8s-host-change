@@ -4,10 +4,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudogu/cesapp-lib/core"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
 	ctrl "sigs.k8s.io/controller-runtime"
+
+	"github.com/cloudogu/cesapp-lib/core"
 )
 
 func TestConfigureLogger(t *testing.T) {

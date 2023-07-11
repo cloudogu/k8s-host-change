@@ -5,10 +5,11 @@ import (
 	"os"
 
 	"github.com/bombsimon/logrusr/v2"
-	"github.com/cloudogu/cesapp-lib/core"
 	"github.com/go-logr/logr"
 	"github.com/sirupsen/logrus"
 	ctrl "sigs.k8s.io/controller-runtime"
+
+	"github.com/cloudogu/cesapp-lib/core"
 )
 
 const namespaceLogLevel = "LOG_LEVEL"

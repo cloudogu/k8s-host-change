@@ -3,13 +3,13 @@ package hosts
 import (
 	"context"
 	"fmt"
-	"github.com/cloudogu/cesapp-lib/registry"
 
 	"github.com/hashicorp/go-multierror"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
+	"github.com/cloudogu/cesapp-lib/registry"
 	"github.com/cloudogu/k8s-host-change/pkg/alias"
 	"github.com/cloudogu/k8s-host-change/pkg/deployment"
 	"github.com/cloudogu/k8s-host-change/pkg/dogu"
