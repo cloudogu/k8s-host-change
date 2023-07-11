@@ -3,7 +3,6 @@ package hosts
 import (
 	"context"
 	"fmt"
-
 	"github.com/hashicorp/go-multierror"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
@@ -44,6 +43,16 @@ func (hau *defaultHostAliasUpdater) UpdateHosts(ctx context.Context, namespace s
 		logger.Info("Delete all aliases from dogu deployments")
 	}
 
+	err = hau.updateOrRollback(ctx, namespace, hostAliases)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (hau *defaultHostAliasUpdater) updateOrRollback(ctx context.Context, namespace string, hostAliases []corev1.HostAlias) error {
+	logger := log.FromContext(ctx)
 	logger.Info("Fetch all dogu deployments")
 	deployments, err := hau.fetcher.FetchAll(ctx, namespace)
 	if err != nil {
