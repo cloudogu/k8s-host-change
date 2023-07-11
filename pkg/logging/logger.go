@@ -12,7 +12,7 @@ import (
 	"github.com/cloudogu/cesapp-lib/core"
 )
 
-const namespaceLogLevel = "LOG_LEVEL"
+const logLevelEnvName = "LOG_LEVEL"
 
 const (
 	errorLevel int = iota
@@ -38,47 +38,55 @@ func (l *libraryLogger) logf(level int, format string, args ...interface{}) {
 	l.logger.Info(level, fmt.Sprintf("[%s] %s", l.name, fmt.Sprintf(format, args...)))
 }
 
+// Debug logs the given arguments with the debug log-level.
 func (l *libraryLogger) Debug(args ...interface{}) {
 	l.log(debugLevel, args...)
 }
 
+// Info logs the given arguments with the info log-level.
 func (l *libraryLogger) Info(args ...interface{}) {
 	l.log(infoLevel, args...)
 }
 
+// Warning logs the given arguments with the warning log-level.
 func (l *libraryLogger) Warning(args ...interface{}) {
 	l.log(warningLevel, args...)
 }
 
+// Error logs the given arguments with the error log-level.
 func (l *libraryLogger) Error(args ...interface{}) {
 	l.log(errorLevel, args...)
 }
 
+// Debugf formats the arguments into the given format string and logs it with the debug log-level.
 func (l *libraryLogger) Debugf(format string, args ...interface{}) {
 	l.logf(debugLevel, format, args...)
 }
 
+// Infof formats the arguments into the given format string and logs it with the info log-level.
 func (l *libraryLogger) Infof(format string, args ...interface{}) {
 	l.logf(infoLevel, format, args...)
 }
 
+// Warningf formats the arguments into the given format string and logs it with the warning log-level.
 func (l *libraryLogger) Warningf(format string, args ...interface{}) {
 	l.logf(warningLevel, format, args...)
 }
 
+// Errorf formats the arguments into the given format string and logs it with the error log-level.
 func (l *libraryLogger) Errorf(format string, args ...interface{}) {
 	l.logf(errorLevel, format, args...)
 }
 
 func getLogLevelFromEnv() (logrus.Level, error) {
-	logLevel, found := os.LookupEnv(namespaceLogLevel)
+	logLevel, found := os.LookupEnv(logLevelEnvName)
 	if !found {
 		return logrus.ErrorLevel, nil
 	}
 
 	level, err := logrus.ParseLevel(logLevel)
 	if err != nil {
-		return logrus.ErrorLevel, fmt.Errorf("value of log environment variable [%s] is not a valid log level: %w", namespaceLogLevel, err)
+		return logrus.ErrorLevel, fmt.Errorf("value of log environment variable [%s] is not a valid log level: %w", logLevelEnvName, err)
 	}
 
 	return level, nil

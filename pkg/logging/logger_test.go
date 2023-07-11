@@ -24,7 +24,7 @@ func TestConfigureLogger(t *testing.T) {
 
 	t.Run("create logger with no log level set in env -> should use default", func(t *testing.T) {
 		// given
-		_ = os.Unsetenv(namespaceLogLevel)
+		_ = os.Unsetenv(logLevelEnvName)
 
 		// when
 		err := ConfigureLogger()
@@ -35,7 +35,7 @@ func TestConfigureLogger(t *testing.T) {
 
 	t.Run("create logger with log level INFO", func(t *testing.T) {
 		// given
-		_ = os.Setenv(namespaceLogLevel, "INFO")
+		_ = os.Setenv(logLevelEnvName, "INFO")
 
 		// when
 		err := ConfigureLogger()
@@ -47,7 +47,7 @@ func TestConfigureLogger(t *testing.T) {
 
 	t.Run("create logger with invalid log level TEST_LEVEL", func(t *testing.T) {
 		// given
-		_ = os.Setenv(namespaceLogLevel, "TEST_LEVEL")
+		_ = os.Setenv(logLevelEnvName, "TEST_LEVEL")
 
 		// when
 		err := ConfigureLogger()
