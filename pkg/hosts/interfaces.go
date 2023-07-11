@@ -7,10 +7,12 @@ import (
 )
 
 type HostAliasUpdater interface {
+	// UpdateHosts updates all dogu deployments with host information like fqdn, internal ip and additional hosts from ces registry.
 	UpdateHosts(ctx context.Context, namespace string) error
 }
 
 type hostAliasGenerator interface {
+	// Generate patches the given deployment with the host configuration provided.
 	Generate() (hostAliases []corev1.HostAlias, err error)
 }
 
@@ -20,5 +22,6 @@ type doguDeploymentFetcher interface {
 }
 
 type deploymentUpdater interface {
+	// UpdateHostAliases replaces the host aliases in the given deployments.
 	UpdateHostAliases(ctx context.Context, namespace string, deployments []appsv1.Deployment, aliases []corev1.HostAlias) error
 }
