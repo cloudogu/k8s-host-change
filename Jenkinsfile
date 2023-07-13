@@ -164,7 +164,7 @@ void stageAutomaticRelease() {
         stage('Push to Registry') {
             Makefile makefile = new Makefile(this)
             String hostChangeVersion = makefile.getVersion()
-            GString targetOperatorResourceYaml = "target/${repositoryName}_${hostChangeVersion}.yaml"
+            GString targetOperatorResourceYaml = "target/make/k8s/${repositoryName}_${hostChangeVersion}.yaml"
 
             DoguRegistry registry = new DoguRegistry(this)
             registry.pushK8sYaml(targetOperatorResourceYaml, repositoryName, "k8s", "${hostChangeVersion}")

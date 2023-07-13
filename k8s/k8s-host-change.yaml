@@ -55,7 +55,7 @@ spec:
     spec:
       containers:
         - name: k8s-host-change
-          image: "cloudogu/k8s-host-change:0.0.1"
+          image: "cloudogu/k8s-host-change:'{{ .Version }}'"
           env:
             - name: STAGE
               value: "production"

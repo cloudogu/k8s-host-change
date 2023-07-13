@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"os"
+
+	ctrl "sigs.k8s.io/controller-runtime"
+
 	"github.com/cloudogu/k8s-host-change/pkg/hosts"
 	"github.com/cloudogu/k8s-host-change/pkg/initializer"
 	"github.com/cloudogu/k8s-host-change/pkg/logging"
-	"os"
-	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 var logger = ctrl.Log.WithName("k8s-host-change")

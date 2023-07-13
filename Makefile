@@ -1,6 +1,6 @@
 # Set these to the desired values
 ARTIFACT_ID=k8s-host-change
-VERSION=0.1.0
+VERSION=0.1.1
 
 GOTAG?=1.20.2
 MAKEFILES_VERSION=7.5.0
@@ -58,6 +58,7 @@ run: ## Run a setup from your host.
 .PHONY: k8s-create-temporary-resource
 k8s-create-temporary-resource: $(K8S_RESOURCE_TEMP_FOLDER)
 	@cp $(K8S_HOST_CHANGE_RESOURCE_YAML) $(K8S_RESOURCE_TEMP_YAML)
+	@sed -i "s/'{{ .Version }}'/$(VERSION)/" $(K8S_RESOURCE_TEMP_YAML)
 
 .PHONY: template-dev-only-image-pull-policy
 template-dev-only-image-pull-policy: $(BINARY_YQ)
