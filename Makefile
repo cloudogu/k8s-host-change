@@ -1,9 +1,9 @@
 # Set these to the desired values
 ARTIFACT_ID=k8s-host-change
-VERSION=0.1.1
+VERSION=0.2.0
 
 GOTAG?=1.20.2
-MAKEFILES_VERSION=7.5.0
+MAKEFILES_VERSION=7.13.0
 
 ## Image URL to use all building/pushing image targets
 IMAGE_DEV=${K3CES_REGISTRY_URL_PREFIX}/${ARTIFACT_ID}:${VERSION}
