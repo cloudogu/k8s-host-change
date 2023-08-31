@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('github.com/cloudogu/ces-build-lib@1.62.0')
+@Library('github.com/cloudogu/ces-build-lib@1.66.0')
 import com.cloudogu.ces.cesbuildlib.*
 
 // Creating necessary git objects
@@ -13,11 +13,14 @@ changelog = new Changelog(this)
 Docker docker = new Docker(this)
 gpg = new Gpg(this, docker)
 goVersion = "1.20"
+Makefile makefile = new Makefile(this)
 
 // Configuration of repository
 repositoryOwner = "cloudogu"
 repositoryName = "k8s-host-change"
 project = "github.com/${repositoryOwner}/${repositoryName}"
+registry = "registry.cloudogu.com"
+registry_namespace = "k8s"
 
 // Configuration of branches
 productionReleaseBranch = "main"
@@ -135,6 +138,7 @@ void stageAutomaticRelease() {
     if (gitflow.isReleaseBranch()) {
         String releaseVersion = git.getSimpleBranchName()
         String dockerReleaseVersion = releaseVersion.split("v")[1]
+        String controllerVersion = makefile.getVersion()
 
         stage('Build & Push Image') {
             def dockerImage = docker.build("cloudogu/${repositoryName}:${dockerReleaseVersion}")
@@ -162,12 +166,25 @@ void stageAutomaticRelease() {
         }
 
         stage('Push to Registry') {
-            Makefile makefile = new Makefile(this)
-            String hostChangeVersion = makefile.getVersion()
-            GString targetOperatorResourceYaml = "target/make/k8s/${repositoryName}_${hostChangeVersion}.yaml"
+            GString targetOperatorResourceYaml = "target/make/k8s/${repositoryName}_${controllerVersion}.yaml"
 
             DoguRegistry registry = new DoguRegistry(this)
-            registry.pushK8sYaml(targetOperatorResourceYaml, repositoryName, "k8s", "${hostChangeVersion}")
+            registry.pushK8sYaml(targetOperatorResourceYaml, repositoryName, "k8s", "${controllerVersion}")
+        }
+
+        stage('Push Helm chart to Harbor') {
+            new Docker(this)
+                    .image("golang:${goVersion}")
+                    .mountJenkinsUser()
+                    .inside("--volume ${WORKSPACE}:/go/src/${project} -w /go/src/${project}")
+                            {
+                                make 'k8s-helm-package-release'
+
+                                withCredentials([usernamePassword(credentialsId: 'harborhelmchartpush', usernameVariable: 'HARBOR_USERNAME', passwordVariable: 'HARBOR_PASSWORD')]) {
+                                    sh ".bin/helm registry login ${registry} --username '${HARBOR_USERNAME}' --password '${HARBOR_PASSWORD}'"
+                                    sh ".bin/helm push target/make/k8s/helm/${repositoryName}-${controllerVersion}.tgz oci://${registry}/${registry_namespace}/"
+                                }
+                            }
         }
 
         stage('Add Github-Release') {
