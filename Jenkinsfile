@@ -13,7 +13,6 @@ changelog = new Changelog(this)
 Docker docker = new Docker(this)
 gpg = new Gpg(this, docker)
 goVersion = "1.20"
-Makefile makefile = new Makefile(this)
 
 // Configuration of repository
 repositoryOwner = "cloudogu"
@@ -138,6 +137,7 @@ void stageAutomaticRelease() {
     if (gitflow.isReleaseBranch()) {
         String releaseVersion = git.getSimpleBranchName()
         String dockerReleaseVersion = releaseVersion.split("v")[1]
+        Makefile makefile = new Makefile(this)
         String controllerVersion = makefile.getVersion()
 
         stage('Build & Push Image') {
