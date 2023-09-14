@@ -3,7 +3,7 @@ ARTIFACT_ID=k8s-host-change
 VERSION=0.2.0
 
 GOTAG?=1.20.2
-MAKEFILES_VERSION=7.13.0
+MAKEFILES_VERSION=8.0.0
 
 ## Image URL to use all building/pushing image targets
 IMAGE_DEV=${K3CES_REGISTRY_URL_PREFIX}/${ARTIFACT_ID}:${VERSION}
@@ -33,7 +33,7 @@ include build/make/digital-signature.mk
 include build/make/mocks.mk
 
 K8S_POST_GENERATE_TARGETS=k8s-generate-job-resource
-include build/make/k8s.mk
+include build/make/k8s-component.mk
 
 ##@ EcoSystem
 
