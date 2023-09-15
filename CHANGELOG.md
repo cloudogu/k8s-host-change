@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- [#7] Move component-dependencies to helm-annotations
+
 ## [v0.2.0] - 2023-08-31
 ### Added
 - [#5] Add helm-chart with dependencies and release the helm-chart in the build-pipeline
