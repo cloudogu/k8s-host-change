@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('github.com/cloudogu/ces-build-lib@1.66.0')
+@Library('github.com/cloudogu/ces-build-lib@1.68.0')
 import com.cloudogu.ces.cesbuildlib.*
 
 // Creating necessary git objects
@@ -12,7 +12,7 @@ github = new GitHub(this, git)
 changelog = new Changelog(this)
 Docker docker = new Docker(this)
 gpg = new Gpg(this, docker)
-goVersion = "1.20"
+goVersion = "1.21"
 
 // Configuration of repository
 repositoryOwner = "cloudogu"
@@ -25,6 +25,9 @@ registry_namespace = "k8s"
 productionReleaseBranch = "main"
 developmentBranch = "develop"
 currentBranch = "${env.BRANCH_NAME}"
+
+helmTargetDir = "target/k8s"
+helmChartDir = "${helmTargetDir}/helm"
 
 node('docker') {
     timestamps {
@@ -59,14 +62,58 @@ node('docker') {
                             stage("Review dog analysis") {
                                 stageStaticAnalysisReviewDog()
                             }
-                        }
 
-        stage("Lint k8s Resources") {
-            stageLintK8SResources()
-        }
+                            stage('Generate k8s Resources') {
+                                make 'helm-generate'
+                                archiveArtifacts "${helmTargetDir}/**/*"
+                            }
+
+                            stage("Lint helm") {
+                                make 'helm-lint'
+                            }
+                        }
 
         stage('SonarQube') {
             stageStaticAnalysisSonarQube()
+        }
+
+        K3d k3d = new K3d(this, "${WORKSPACE}", "${WORKSPACE}/k3d", env.PATH)
+
+        try {
+            String controllerVersion = makefile.getVersion()
+
+            stage('Set up k3d cluster') {
+                k3d.startK3d()
+            }
+
+            def imageName = ""
+            stage('Build & Push Image') {
+                imageName = k3d.buildAndPushToLocalRegistry("cloudogu/${repositoryName}", controllerVersion)
+            }
+
+            stage('Update development resources') {
+                def repository = imageName.substring(0, imageName.lastIndexOf(":"))
+                docker.image("golang:${goVersion}")
+                        .mountJenkinsUser()
+                        .inside("--volume ${WORKSPACE}:/workdir -w /workdir") {
+                            sh "STAGE=development IMAGE_DEV=${repository} make helm-values-replace-image-repo"
+                        }
+            }
+
+            stage('Deploy job') {
+                k3d.helm("install ${repositoryName} ${helmChartDir}")
+            }
+
+            stage('Wait for Ready Rollout') {
+                k3d.kubectl("--namespace default wait --for=condition=Completed pod -l batch.kubernetes.io/job-name=k8s-host-change --timeout 300s")
+            }
+        } catch(Exception e) {
+            k3d.collectAndArchiveLogs()
+            throw e as java.lang.Throwable
+        } finally {
+            stage('Remove k3d cluster') {
+                k3d.deleteK3d()
+            }
         }
 
         stageAutomaticRelease()
@@ -80,16 +127,6 @@ void gitWithCredentials(String command) {
                 returnStdout: true
         )
     }
-}
-
-void stageLintK8SResources() {
-    String kubevalImage = "cytopia/kubeval:0.13"
-    docker
-            .image(kubevalImage)
-            .inside("-v ${WORKSPACE}/k8s:/data -t --entrypoint=")
-                    {
-                        sh "kubeval /data/${repositoryName}.yaml --ignore-missing-schemas"
-                    }
 }
 
 void stageStaticAnalysisReviewDog() {
@@ -147,48 +184,35 @@ void stageAutomaticRelease() {
             }
         }
 
-        stage('Finish Release') {
-            gitflow.finishRelease(releaseVersion, productionReleaseBranch)
-        }
-
-        stage('Sign after Release') {
-            gpg.createSignature()
-        }
-
-        stage('Regenerate resources for release') {
-            new Docker(this)
-                    .image("golang:${goVersion}")
-                    .mountJenkinsUser()
-                    .inside("--volume ${WORKSPACE}:/go/src/${project} -w /go/src/${project}")
-                            {
-                                make 'k8s-create-temporary-resource'
-                            }
-        }
-
-        stage('Push to Registry') {
-            GString targetOperatorResourceYaml = "target/make/k8s/${repositoryName}_${controllerVersion}.yaml"
-
-            DoguRegistry registry = new DoguRegistry(this)
-            registry.pushK8sYaml(targetOperatorResourceYaml, repositoryName, "k8s", "${controllerVersion}")
-        }
-
         stage('Push Helm chart to Harbor') {
             new Docker(this)
                     .image("golang:${goVersion}")
                     .mountJenkinsUser()
                     .inside("--volume ${WORKSPACE}:/go/src/${project} -w /go/src/${project}")
                             {
-                                make 'helm-package-release'
+                                // Package operator-chart & crd-chart
+                                make 'helm-package'
+                                archiveArtifacts "${helmTargetDir}/**/*"
 
+                                // Push charts
                                 withCredentials([usernamePassword(credentialsId: 'harborhelmchartpush', usernameVariable: 'HARBOR_USERNAME', passwordVariable: 'HARBOR_PASSWORD')]) {
                                     sh ".bin/helm registry login ${registry} --username '${HARBOR_USERNAME}' --password '${HARBOR_PASSWORD}'"
-                                    sh ".bin/helm push target/make/k8s/helm/${repositoryName}-${controllerVersion}.tgz oci://${registry}/${registry_namespace}/"
+
+                                    sh ".bin/helm push ${helmChartDir}/${repositoryName}-${controllerVersion}.tgz oci://${registry}/${registry_namespace}/"
                                 }
                             }
         }
 
+        stage('Sign after Release') {
+            gpg.createSignature()
+        }
+
         stage('Add Github-Release') {
             releaseId = github.createReleaseWithChangelog(releaseVersion, changelog, productionReleaseBranch)
+        }
+
+        stage('Finish Release') {
+            gitflow.finishRelease(releaseVersion, productionReleaseBranch)
         }
     }
 }
