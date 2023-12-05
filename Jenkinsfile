@@ -106,6 +106,7 @@ node('docker') {
             }
 
             stage('Wait for Ready Rollout') {
+                sleep(time: 10, unit: "SECONDS")
                 k3d.kubectl("--namespace default wait --for=condition=Completed pod -l batch.kubernetes.io/job-name=k8s-host-change --timeout 300s")
             }
         } catch(Exception e) {
