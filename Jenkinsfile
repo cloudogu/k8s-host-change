@@ -78,58 +78,6 @@ node('docker') {
             stageStaticAnalysisSonarQube()
         }
 
-        K3d k3d = new K3d(this, "${WORKSPACE}", "${WORKSPACE}/k3d", env.PATH)
-
-        try {
-            String controllerVersion = makefile.getVersion()
-
-            stage('Set up k3d cluster') {
-                k3d.startK3d()
-            }
-
-            def imageName = ""
-            stage('Build & Push Image') {
-                imageName = k3d.buildAndPushToLocalRegistry("cloudogu/${repositoryName}", controllerVersion)
-            }
-
-            stage('Update development resources') {
-                def repository = imageName.substring(0, imageName.lastIndexOf(":"))
-                docker.image("golang:${goVersion}")
-                        .mountJenkinsUser()
-                        .inside("--volume ${WORKSPACE}:/workdir -w /workdir") {
-                            sh "STAGE=development IMAGE_DEV=${repository} make helm-values-replace-image-repo"
-                        }
-            }
-
-            stage('Deploy etcd') {
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'harborhelmchartpush', usernameVariable: 'HARBOR_USERNAME', passwordVariable: 'HARBOR_PASSWORD']]) {
-                    k3d.helm("registry login ${registry} --username '${HARBOR_USERNAME}' --password '${HARBOR_PASSWORD}'")
-                    k3d.helm("install k8s-etcd oci://${registry}/${registry_namespace}/k8s-etcd --version 3.5.9-1")
-                }
-            }
-
-            stage('Wait for etcd to be ready') {
-                sleep(time: 5, unit: "SECONDS")
-                k3d.kubectl("wait --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=etcd-0 --timeout=300s")
-            }
-
-            stage('Deploy job') {
-                k3d.helm("install ${repositoryName} ${helmChartDir}")
-            }
-
-            stage('Wait for Ready Rollout') {
-                sleep(time: 10, unit: "SECONDS")
-                k3d.kubectl("--namespace default wait --for=condition=complete job -l app.kubernetes.io/name=k8s-host-change --timeout 300s")
-            }
-        } catch(Exception e) {
-            k3d.collectAndArchiveLogs()
-            throw e as java.lang.Throwable
-        } finally {
-            stage('Remove k3d cluster') {
-                k3d.deleteK3d()
-            }
-        }
-
         stageAutomaticRelease()
     }
 }
