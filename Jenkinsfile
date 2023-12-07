@@ -10,7 +10,6 @@ git.committerEmail = 'cesmarvin@cloudogu.com'
 gitflow = new GitFlow(this, git)
 github = new GitHub(this, git)
 changelog = new Changelog(this)
-docker = new Docker(this)
 goVersion = "1.21"
 makefile = new Makefile(this)
 
@@ -45,7 +44,7 @@ node('docker') {
             markdown.check()
         }
 
-        docker
+        new Docker(this)
             .image("golang:${goVersion}")
             .mountJenkinsUser()
             .inside("--volume ${WORKSPACE}:/go/src/${project} -w /go/src/${project}") {
@@ -138,6 +137,7 @@ void stageAutomaticRelease() {
         String controllerVersion = makefile.getVersion()
 
         stage('Build & Push Image') {
+            Docker docker = new Docker(this)
             def dockerImage = docker.build("cloudogu/${repositoryName}:${dockerReleaseVersion}")
             docker.withRegistry('https://registry.hub.docker.com/', 'dockerHubCredentials') {
                 dockerImage.push("${dockerReleaseVersion}")
@@ -149,7 +149,7 @@ void stageAutomaticRelease() {
         }
 
         stage('Push Helm chart to Harbor') {
-            docker
+            new Docker(this)
                 .image("golang:${goVersion}")
                 .mountJenkinsUser()
                 .inside("--volume ${WORKSPACE}:/go/src/${project} -w /go/src/${project}") {
