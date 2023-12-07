@@ -10,8 +10,6 @@ git.committerEmail = 'cesmarvin@cloudogu.com'
 gitflow = new GitFlow(this, git)
 github = new GitHub(this, git)
 changelog = new Changelog(this)
-Docker docker = new Docker(this)
-gpg = new Gpg(this, docker)
 goVersion = "1.21"
 makefile = new Makefile(this)
 
@@ -47,32 +45,31 @@ node('docker') {
         }
 
         new Docker(this)
-                .image("golang:${goVersion}")
-                .mountJenkinsUser()
-                .inside("--volume ${WORKSPACE}:/go/src/${project} -w /go/src/${project}")
-                        {
-                            stage('Build') {
-                                make 'build-job'
-                            }
+            .image("golang:${goVersion}")
+            .mountJenkinsUser()
+            .inside("--volume ${WORKSPACE}:/go/src/${project} -w /go/src/${project}") {
+                stage('Build') {
+                    make 'build-job'
+                }
 
-                            stage("Unit test") {
-                                make 'unit-test'
-                                junit allowEmptyResults: true, testResults: 'target/unit-tests/*-tests.xml'
-                            }
+                stage("Unit test") {
+                    make 'unit-test'
+                    junit allowEmptyResults: true, testResults: 'target/unit-tests/*-tests.xml'
+                }
 
-                            stage("Review dog analysis") {
-                                stageStaticAnalysisReviewDog()
-                            }
+                stage("Review dog analysis") {
+                    stageStaticAnalysisReviewDog()
+                }
 
-                            stage('Generate k8s Resources') {
-                                make 'helm-generate'
-                                archiveArtifacts "${helmTargetDir}/**/*"
-                            }
+                stage('Generate k8s Resources') {
+                    make 'helm-generate'
+                    archiveArtifacts "${helmTargetDir}/**/*"
+                }
 
-                            stage("Lint helm") {
-                                make 'helm-lint'
-                            }
-                        }
+                stage("Lint helm") {
+                    make 'helm-lint'
+                }
+            }
 
         stage('SonarQube') {
             stageStaticAnalysisSonarQube()
@@ -128,6 +125,7 @@ void stageStaticAnalysisSonarQube() {
         def qGate = waitForQualityGate()
         if (qGate.status != 'OK') {
             unstable("Pipeline unstable due to SonarQube quality gate failure")
+            unstable("Pipeline unstable due to SonarQube quality gate failure")
         }
     }
 }
@@ -139,6 +137,7 @@ void stageAutomaticRelease() {
         String controllerVersion = makefile.getVersion()
 
         stage('Build & Push Image') {
+            Docker docker = new Docker(this)
             def dockerImage = docker.build("cloudogu/${repositoryName}:${dockerReleaseVersion}")
             docker.withRegistry('https://registry.hub.docker.com/', 'dockerHubCredentials') {
                 dockerImage.push("${dockerReleaseVersion}")
@@ -150,7 +149,7 @@ void stageAutomaticRelease() {
         }
 
         stage('Push Helm chart to Harbor') {
-            docker
+            new Docker(this)
                 .image("golang:${goVersion}")
                 .mountJenkinsUser()
                 .inside("--volume ${WORKSPACE}:/go/src/${project} -w /go/src/${project}") {
