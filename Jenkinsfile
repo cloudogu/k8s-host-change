@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('github.com/cloudogu/ces-build-lib@1.66.0')
+@Library('github.com/cloudogu/ces-build-lib@1.68.0')
 import com.cloudogu.ces.cesbuildlib.*
 
 // Creating necessary git objects
@@ -12,7 +12,8 @@ github = new GitHub(this, git)
 changelog = new Changelog(this)
 Docker docker = new Docker(this)
 gpg = new Gpg(this, docker)
-goVersion = "1.20"
+goVersion = "1.21"
+makefile = new Makefile(this)
 
 // Configuration of repository
 repositoryOwner = "cloudogu"
@@ -25,6 +26,9 @@ registry_namespace = "k8s"
 productionReleaseBranch = "main"
 developmentBranch = "develop"
 currentBranch = "${env.BRANCH_NAME}"
+
+helmTargetDir = "target/k8s"
+helmChartDir = "${helmTargetDir}/helm"
 
 node('docker') {
     timestamps {
@@ -59,11 +63,16 @@ node('docker') {
                             stage("Review dog analysis") {
                                 stageStaticAnalysisReviewDog()
                             }
-                        }
 
-        stage("Lint k8s Resources") {
-            stageLintK8SResources()
-        }
+                            stage('Generate k8s Resources') {
+                                make 'helm-generate'
+                                archiveArtifacts "${helmTargetDir}/**/*"
+                            }
+
+                            stage("Lint helm") {
+                                make 'helm-lint'
+                            }
+                        }
 
         stage('SonarQube') {
             stageStaticAnalysisSonarQube()
@@ -80,16 +89,6 @@ void gitWithCredentials(String command) {
                 returnStdout: true
         )
     }
-}
-
-void stageLintK8SResources() {
-    String kubevalImage = "cytopia/kubeval:0.13"
-    docker
-            .image(kubevalImage)
-            .inside("-v ${WORKSPACE}/k8s:/data -t --entrypoint=")
-                    {
-                        sh "kubeval /data/${repositoryName}.yaml --ignore-missing-schemas"
-                    }
 }
 
 void stageStaticAnalysisReviewDog() {
@@ -137,7 +136,6 @@ void stageAutomaticRelease() {
     if (gitflow.isReleaseBranch()) {
         String releaseVersion = git.getSimpleBranchName()
         String dockerReleaseVersion = releaseVersion.split("v")[1]
-        Makefile makefile = new Makefile(this)
         String controllerVersion = makefile.getVersion()
 
         stage('Build & Push Image') {
@@ -151,40 +149,22 @@ void stageAutomaticRelease() {
             gitflow.finishRelease(releaseVersion, productionReleaseBranch)
         }
 
-        stage('Sign after Release') {
-            gpg.createSignature()
-        }
-
-        stage('Regenerate resources for release') {
-            new Docker(this)
-                    .image("golang:${goVersion}")
-                    .mountJenkinsUser()
-                    .inside("--volume ${WORKSPACE}:/go/src/${project} -w /go/src/${project}")
-                            {
-                                make 'k8s-create-temporary-resource'
-                            }
-        }
-
-        stage('Push to Registry') {
-            GString targetOperatorResourceYaml = "target/make/k8s/${repositoryName}_${controllerVersion}.yaml"
-
-            DoguRegistry registry = new DoguRegistry(this)
-            registry.pushK8sYaml(targetOperatorResourceYaml, repositoryName, "k8s", "${controllerVersion}")
-        }
-
         stage('Push Helm chart to Harbor') {
-            new Docker(this)
-                    .image("golang:${goVersion}")
-                    .mountJenkinsUser()
-                    .inside("--volume ${WORKSPACE}:/go/src/${project} -w /go/src/${project}")
-                            {
-                                make 'helm-package-release'
+            docker
+                .image("golang:${goVersion}")
+                .mountJenkinsUser()
+                .inside("--volume ${WORKSPACE}:/go/src/${project} -w /go/src/${project}") {
+                    // Package operator-chart & crd-chart
+                    make 'helm-package'
+                    archiveArtifacts "${helmTargetDir}/**/*"
 
-                                withCredentials([usernamePassword(credentialsId: 'harborhelmchartpush', usernameVariable: 'HARBOR_USERNAME', passwordVariable: 'HARBOR_PASSWORD')]) {
-                                    sh ".bin/helm registry login ${registry} --username '${HARBOR_USERNAME}' --password '${HARBOR_PASSWORD}'"
-                                    sh ".bin/helm push target/make/k8s/helm/${repositoryName}-${controllerVersion}.tgz oci://${registry}/${registry_namespace}/"
-                                }
-                            }
+                    // Push charts
+                    withCredentials([usernamePassword(credentialsId: 'harborhelmchartpush', usernameVariable: 'HARBOR_USERNAME', passwordVariable: 'HARBOR_PASSWORD')]) {
+                        sh ".bin/helm registry login ${registry} --username '${HARBOR_USERNAME}' --password '${HARBOR_PASSWORD}'"
+
+                        sh ".bin/helm push ${helmChartDir}/${repositoryName}-${controllerVersion}.tgz oci://${registry}/${registry_namespace}/"
+                    }
+                }
         }
 
         stage('Add Github-Release') {

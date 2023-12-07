@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.1] - 2023-12-07
+### Added
+- [#9] Add component patch templates used for airgapped environments.
+- [#9] Update makefiles to 9.0.1 and hold all yaml resources in a single helm chart.
+
 ## [v0.3.0] - 2023-09-15
 ### Changed
 - [#7] Move component-dependencies to helm-annotations

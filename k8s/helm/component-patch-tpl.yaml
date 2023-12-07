@@ -1,0 +1,10 @@
+apiVersion: v1
+values:
+  images:
+    job: cloudogu/k8s-host-change:0.3.1
+patches:
+  values.yaml:
+    job:
+      image:
+        repository: "{{ registryFrom .images.backup-operator }}/{{ repositoryFrom .images.backup-operator }}"
+        tag: "{{ tagFrom .images.backup-operator }}"
