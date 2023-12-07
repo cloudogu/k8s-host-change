@@ -145,31 +145,30 @@ void stageAutomaticRelease() {
             }
         }
 
-        stage('Push Helm chart to Harbor') {
-            new Docker(this)
-                    .image("golang:${goVersion}")
-                    .mountJenkinsUser()
-                    .inside("--volume ${WORKSPACE}:/go/src/${project} -w /go/src/${project}")
-                            {
-                                // Package operator-chart & crd-chart
-                                make 'helm-package'
-                                archiveArtifacts "${helmTargetDir}/**/*"
-
-                                // Push charts
-                                withCredentials([usernamePassword(credentialsId: 'harborhelmchartpush', usernameVariable: 'HARBOR_USERNAME', passwordVariable: 'HARBOR_PASSWORD')]) {
-                                    sh ".bin/helm registry login ${registry} --username '${HARBOR_USERNAME}' --password '${HARBOR_PASSWORD}'"
-
-                                    sh ".bin/helm push ${helmChartDir}/${repositoryName}-${controllerVersion}.tgz oci://${registry}/${registry_namespace}/"
-                                }
-                            }
-        }
-
         stage('Sign after Release') {
             gpg.createSignature()
         }
 
         stage('Finish Release') {
             gitflow.finishRelease(releaseVersion, productionReleaseBranch)
+        }
+
+        stage('Push Helm chart to Harbor') {
+            docker
+                .image("golang:${goVersion}")
+                .mountJenkinsUser()
+                .inside("--volume ${WORKSPACE}:/go/src/${project} -w /go/src/${project}") {
+                    // Package operator-chart & crd-chart
+                    make 'helm-package'
+                    archiveArtifacts "${helmTargetDir}/**/*"
+
+                    // Push charts
+                    withCredentials([usernamePassword(credentialsId: 'harborhelmchartpush', usernameVariable: 'HARBOR_USERNAME', passwordVariable: 'HARBOR_PASSWORD')]) {
+                        sh ".bin/helm registry login ${registry} --username '${HARBOR_USERNAME}' --password '${HARBOR_PASSWORD}'"
+
+                        sh ".bin/helm push ${helmChartDir}/${repositoryName}-${controllerVersion}.tgz oci://${registry}/${registry_namespace}/"
+                    }
+                }
         }
 
         stage('Add Github-Release') {
