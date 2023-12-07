@@ -145,10 +145,6 @@ void stageAutomaticRelease() {
             }
         }
 
-        stage('Sign after Release') {
-            gpg.createSignature()
-        }
-
         stage('Finish Release') {
             gitflow.finishRelease(releaseVersion, productionReleaseBranch)
         }
