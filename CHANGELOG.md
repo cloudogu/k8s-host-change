@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.2] - 2023-12-11
+### Fixed
+- [#11] Use correct key in patch templates.
+
 ## [v0.3.1] - 2023-12-07
 ### Added
 - [#9] Add component patch templates used for airgapped environments.
