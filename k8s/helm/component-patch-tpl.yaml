@@ -6,5 +6,5 @@ patches:
   values.yaml:
     job:
       image:
-        repository: "{{ registryFrom .images.backup-operator }}/{{ repositoryFrom .images.backup-operator }}"
-        tag: "{{ tagFrom .images.backup-operator }}"
+        repository: "{{ registryFrom .images.job }}/{{ repositoryFrom .images.job }}"
+        tag: "{{ tagFrom .images.job }}"
