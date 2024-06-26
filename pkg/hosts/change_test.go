@@ -41,7 +41,7 @@ func Test_hostAliasUpdater_UpdateHosts(t *testing.T) {
 		// given
 		generator := failingHostAliasGenerator(t)
 		ctx := context.TODO()
-		sut := &defaultHostAliasUpdater{generator: generator}
+		sut := &DefaultHostAliasUpdater{generator: generator}
 
 		// when
 		err := sut.UpdateHosts(ctx, testNamespace)
@@ -56,7 +56,7 @@ func Test_hostAliasUpdater_UpdateHosts(t *testing.T) {
 		generator := succeedingHostAliasGenerator(t)
 		fetcher := failingDoguDeploymentFetcher(t)
 		ctx := context.TODO()
-		sut := &defaultHostAliasUpdater{generator: generator, fetcher: fetcher}
+		sut := &DefaultHostAliasUpdater{generator: generator, fetcher: fetcher}
 
 		// when
 		err := sut.UpdateHosts(ctx, testNamespace)
@@ -72,7 +72,7 @@ func Test_hostAliasUpdater_UpdateHosts(t *testing.T) {
 		fetcher := succeedingDoguDeploymentFetcherOnRollback(t)
 		updater := failingDeploymentUpdater(t)
 		ctx := context.TODO()
-		sut := &defaultHostAliasUpdater{
+		sut := &DefaultHostAliasUpdater{
 			generator: generator,
 			fetcher:   fetcher,
 			updater:   updater,
@@ -92,7 +92,7 @@ func Test_hostAliasUpdater_UpdateHosts(t *testing.T) {
 		fetcher := failingDoguDeploymentFetcherOnRollback(t)
 		updater := failingDeploymentUpdaterCallOnce(t)
 		ctx := context.TODO()
-		sut := &defaultHostAliasUpdater{
+		sut := &DefaultHostAliasUpdater{
 			generator: generator,
 			fetcher:   fetcher,
 			updater:   updater,
@@ -113,7 +113,7 @@ func Test_hostAliasUpdater_UpdateHosts(t *testing.T) {
 		fetcher := succeedingDoguDeploymentFetcherOnRollback(t)
 		updater := failingDeploymentUpdaterOnRollback(t)
 		ctx := context.TODO()
-		sut := &defaultHostAliasUpdater{
+		sut := &DefaultHostAliasUpdater{
 			generator: generator,
 			fetcher:   fetcher,
 			updater:   updater,
@@ -134,7 +134,7 @@ func Test_hostAliasUpdater_UpdateHosts(t *testing.T) {
 		fetcher := succeedingDoguDeploymentFetcher(t)
 		updater := succeedingDeploymentUpdater(t)
 		ctx := context.TODO()
-		sut := &defaultHostAliasUpdater{
+		sut := &DefaultHostAliasUpdater{
 			generator: generator,
 			fetcher:   fetcher,
 			updater:   updater,

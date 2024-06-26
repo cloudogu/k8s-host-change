@@ -6,11 +6,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-type HostAliasUpdater interface {
-	// UpdateHosts updates all dogu deployments with host information like fqdn, internal ip and additional hosts from ces registry.
-	UpdateHosts(ctx context.Context, namespace string) error
-}
-
 type hostAliasGenerator interface {
 	// Generate patches the given deployment with the host configuration provided.
 	Generate(ctx context.Context) (hostAliases []corev1.HostAlias, err error)
