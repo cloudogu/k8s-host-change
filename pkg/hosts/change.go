@@ -8,8 +8,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/cloudogu/cesapp-lib/registry"
-	"github.com/cloudogu/k8s-host-change/pkg/alias"
 	"github.com/cloudogu/k8s-host-change/pkg/deployment"
 	"github.com/cloudogu/k8s-host-change/pkg/dogu"
 )
@@ -21,9 +19,9 @@ type defaultHostAliasUpdater struct {
 }
 
 // NewHostAliasUpdater is used to create a new instance of defaultHostAliasUpdater.
-var NewHostAliasUpdater = func(clientSet kubernetes.Interface, cesReg registry.Registry) HostAliasUpdater {
+var NewHostAliasUpdater = func(clientSet kubernetes.Interface, generator hostAliasGenerator) HostAliasUpdater {
 	return &defaultHostAliasUpdater{
-		generator: alias.NewHostAliasGenerator(cesReg.GlobalConfig()),
+		generator: generator,
 		fetcher:   dogu.NewDeploymentFetcher(clientSet),
 		updater:   deployment.NewUpdater(clientSet),
 	}
@@ -33,7 +31,7 @@ var NewHostAliasUpdater = func(clientSet kubernetes.Interface, cesReg registry.R
 func (hau *defaultHostAliasUpdater) UpdateHosts(ctx context.Context, namespace string) error {
 	logger := log.FromContext(ctx)
 	logger.Info("Update host entries in dogu deployments")
-	hostAliases, err := hau.generator.Generate()
+	hostAliases, err := hau.generator.Generate(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to generate host aliases: %w", err)
 	}

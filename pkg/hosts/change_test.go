@@ -151,14 +151,14 @@ func Test_hostAliasUpdater_UpdateHosts(t *testing.T) {
 func failingHostAliasGenerator(t *testing.T) hostAliasGenerator {
 	t.Helper()
 	generator := newMockHostAliasGenerator(t)
-	generator.EXPECT().Generate().Return(nil, assert.AnError).Once()
+	generator.EXPECT().Generate(mock.Anything).Return(nil, assert.AnError).Once()
 	return generator
 }
 
 func succeedingHostAliasGenerator(t *testing.T) hostAliasGenerator {
 	t.Helper()
 	generator := newMockHostAliasGenerator(t)
-	generator.EXPECT().Generate().Return(hostAliases, nil).Once()
+	generator.EXPECT().Generate(mock.Anything).Return(hostAliases, nil).Once()
 	return generator
 }
 
@@ -225,11 +225,10 @@ func succeedingDeploymentUpdater(t *testing.T) deploymentUpdater {
 func TestNewHostAliasUpdater(t *testing.T) {
 	// given
 	clientSet := fake.NewSimpleClientset()
-	cesReg := newMockCesRegistry(t)
-	cesReg.EXPECT().GlobalConfig().Return(nil).Once()
+	generatorMock := newMockHostAliasGenerator(t)
 
 	// when
-	updater := NewHostAliasUpdater(clientSet, cesReg)
+	updater := NewHostAliasUpdater(clientSet, generatorMock)
 
 	// then
 	require.NotNil(t, updater)

@@ -2,7 +2,6 @@ package hosts
 
 import (
 	"context"
-
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -14,7 +13,7 @@ type HostAliasUpdater interface {
 
 type hostAliasGenerator interface {
 	// Generate patches the given deployment with the host configuration provided.
-	Generate() (hostAliases []corev1.HostAlias, err error)
+	Generate(ctx context.Context) (hostAliases []corev1.HostAlias, err error)
 }
 
 type doguDeploymentFetcher interface {
