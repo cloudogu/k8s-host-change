@@ -1,7 +1,8 @@
 package alias
 
-import "github.com/cloudogu/cesapp-lib/registry"
+import "context"
 
-type registryContext interface {
-	registry.ConfigurationContext
+type globalConfigValueGetter interface {
+	Get(ctx context.Context, key string) (string, error)
+	GetAll(ctx context.Context) (map[string]string, error)
 }

@@ -1,6 +1,7 @@
 package alias
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strconv"
@@ -26,19 +27,19 @@ type generatorConfig struct {
 }
 
 type hostAliasGenerator struct {
-	globalConfig registryContext
+	globalConfig globalConfigValueGetter
 }
 
 // NewHostAliasGenerator creates a generator with the ability to return host aliases from the configured internal ip, additional hosts and fqdn.
-func NewHostAliasGenerator(globalConfig registryContext) *hostAliasGenerator {
+func NewHostAliasGenerator(globalConfig globalConfigValueGetter) *hostAliasGenerator {
 	return &hostAliasGenerator{
 		globalConfig: globalConfig,
 	}
 }
 
 // Generate patches the given deployment with the host configuration provided.
-func (d *hostAliasGenerator) Generate() (hostAliases []v1.HostAlias, err error) {
-	config, err := d.getGeneratorConfig()
+func (d *hostAliasGenerator) Generate(ctx context.Context) (hostAliases []v1.HostAlias, err error) {
+	config, err := d.getGeneratorConfig(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
@@ -63,8 +64,8 @@ func (d *hostAliasGenerator) Generate() (hostAliases []v1.HostAlias, err error) 
 }
 
 // getGeneratorConfig reads hosts-specific keys from the global configuration and creates a generatorConfig object.
-func (d *hostAliasGenerator) getGeneratorConfig() (*generatorConfig, error) {
-	fqdn, err := d.getFQDN()
+func (d *hostAliasGenerator) getGeneratorConfig(ctx context.Context) (*generatorConfig, error) {
+	fqdn, err := d.getFQDN(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -73,19 +74,19 @@ func (d *hostAliasGenerator) getGeneratorConfig() (*generatorConfig, error) {
 		fqdn: fqdn,
 	}
 
-	hostsConfig.useInternalIP, err = d.isInternalIPUsed()
+	hostsConfig.useInternalIP, err = d.isInternalIPUsed(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	if hostsConfig.useInternalIP {
-		hostsConfig.internalIP, err = d.getInternalIP()
+		hostsConfig.internalIP, err = d.getInternalIP(ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	hostsConfig.additionalHosts, err = d.retrieveAdditionalHosts()
+	hostsConfig.additionalHosts, err = d.retrieveAdditionalHosts(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -93,8 +94,8 @@ func (d *hostAliasGenerator) getGeneratorConfig() (*generatorConfig, error) {
 	return hostsConfig, nil
 }
 
-func (d *hostAliasGenerator) getFQDN() (string, error) {
-	fqdn, err := d.globalConfig.Get(fqdnKey)
+func (d *hostAliasGenerator) getFQDN(ctx context.Context) (string, error) {
+	fqdn, err := d.globalConfig.Get(ctx, fqdnKey)
 	if err != nil {
 		return "", fmt.Errorf("failed to get value for '%s' from global config: %w", fqdnKey, err)
 	}
@@ -102,8 +103,8 @@ func (d *hostAliasGenerator) getFQDN() (string, error) {
 	return fqdn, nil
 }
 
-func (d *hostAliasGenerator) isInternalIPUsed() (useInternalIP bool, err error) {
-	useInternalIPRaw, err := d.globalConfig.Get(useInternalIPKey)
+func (d *hostAliasGenerator) isInternalIPUsed(ctx context.Context) (useInternalIP bool, err error) {
+	useInternalIPRaw, err := d.globalConfig.Get(ctx, useInternalIPKey)
 	if err != nil && !registry.IsKeyNotFoundError(err) {
 		return false, fmt.Errorf("failed to get value for '%s' from global config: %w", useInternalIPKey, err)
 	} else if err == nil {
@@ -117,8 +118,8 @@ func (d *hostAliasGenerator) isInternalIPUsed() (useInternalIP bool, err error) 
 	return useInternalIP, nil
 }
 
-func (d *hostAliasGenerator) getInternalIP() (internalIP net.IP, err error) {
-	internalIPRaw, err := d.globalConfig.Get(internalIPKey)
+func (d *hostAliasGenerator) getInternalIP(ctx context.Context) (internalIP net.IP, err error) {
+	internalIPRaw, err := d.globalConfig.Get(ctx, internalIPKey)
 	if err != nil && !registry.IsKeyNotFoundError(err) {
 		return nil, fmt.Errorf("failed to get value for field '%s' from global config: %w", internalIPKey, err)
 	} else if err == nil {
@@ -131,8 +132,8 @@ func (d *hostAliasGenerator) getInternalIP() (internalIP net.IP, err error) {
 	return internalIP, nil
 }
 
-func (d *hostAliasGenerator) retrieveAdditionalHosts() (map[string]string, error) {
-	globalConfig, err := d.globalConfig.GetAll()
+func (d *hostAliasGenerator) retrieveAdditionalHosts(ctx context.Context) (map[string]string, error) {
+	globalConfig, err := d.globalConfig.GetAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all keys from config: %w", err)
 	}

@@ -1,6 +1,8 @@
 package alias
 
 import (
+	"context"
+	"github.com/stretchr/testify/mock"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,21 +15,20 @@ import (
 func Test_hostAliasGenerator_Generate(t *testing.T) {
 	t.Run("if internalIP is used: fqdn should point to internalIP additional hosts are present", func(t *testing.T) {
 		// given
-		globalConfigMock := newMockRegistryContext(t)
-		expect := globalConfigMock.EXPECT()
-
-		getExpect := expect.Get
 		fqdn := "ecosystem.cloudogu.com"
 		internalIP := "23.24.12.99"
-		getExpect("fqdn").Return(fqdn, nil)
-		getExpect("k8s/use_internal_ip").Return("true", nil)
-		getExpect("k8s/internal_ip").Return(internalIP, nil)
+
+		globalConfigMock := newMockGlobalConfigValueGetter(t)
+		globalConfigMock.EXPECT().Get(mock.Anything, "fqdn").Return(fqdn, nil)
+		globalConfigMock.EXPECT().Get(mock.Anything, "k8s/use_internal_ip").Return("true", nil)
+		globalConfigMock.EXPECT().Get(mock.Anything, "k8s/internal_ip").Return(internalIP, nil)
 
 		additionalHostOne := "prod.cloudogu.com"
 		additionalHostTwo := "11.11.11.22"
 		additionalHosts := map[string]string{"containers/additional_hosts/host_one": additionalHostOne,
 			"containers/additional_hosts/host_two": additionalHostTwo}
-		expect.GetAll().Return(additionalHosts, nil)
+
+		globalConfigMock.EXPECT().GetAll(mock.Anything).Return(additionalHosts, nil)
 
 		generator := hostAliasGenerator{
 			globalConfig: globalConfigMock,
@@ -38,7 +39,7 @@ func Test_hostAliasGenerator_Generate(t *testing.T) {
 		aliasTwo := v1.HostAlias{IP: additionalHostTwo, Hostnames: []string{"host_two"}}
 
 		// when
-		aliases, err := generator.Generate()
+		aliases, err := generator.Generate(context.TODO())
 
 		// then
 		require.NoError(t, err)
@@ -50,19 +51,18 @@ func Test_hostAliasGenerator_Generate(t *testing.T) {
 
 	t.Run("if internalIP is not used: only additional hosts should be in hosts", func(t *testing.T) {
 		// given
-		globalConfigMock := newMockRegistryContext(t)
-		expect := globalConfigMock.EXPECT()
-
-		getExpect := expect.Get
 		fqdn := "ecosystem.cloudogu.com"
-		getExpect("fqdn").Return(fqdn, nil)
-		getExpect("k8s/use_internal_ip").Return("false", nil)
+
+		globalConfigMock := newMockGlobalConfigValueGetter(t)
+		globalConfigMock.EXPECT().Get(mock.Anything, "fqdn").Return(fqdn, nil)
+		globalConfigMock.EXPECT().Get(mock.Anything, "k8s/use_internal_ip").Return("false", nil)
 
 		additionalHostOne := "prod.cloudogu.com"
 		additionalHostTwo := "11.11.11.22"
 		additionalHosts := map[string]string{"containers/additional_hosts/host_one": additionalHostOne,
 			"containers/additional_hosts/host_two": additionalHostTwo}
-		expect.GetAll().Return(additionalHosts, nil)
+
+		globalConfigMock.EXPECT().GetAll(mock.Anything).Return(additionalHosts, nil)
 
 		generator := hostAliasGenerator{
 			globalConfig: globalConfigMock,
@@ -72,7 +72,7 @@ func Test_hostAliasGenerator_Generate(t *testing.T) {
 		aliasTwo := v1.HostAlias{IP: additionalHostTwo, Hostnames: []string{"host_two"}}
 
 		// when
-		aliases, err := generator.Generate()
+		aliases, err := generator.Generate(context.TODO())
 
 		// then
 		require.NoError(t, err)
@@ -83,18 +83,15 @@ func Test_hostAliasGenerator_Generate(t *testing.T) {
 
 	t.Run("should fail on query fqdn error ", func(t *testing.T) {
 		// given
-		globalConfigMock := newMockRegistryContext(t)
-		expect := globalConfigMock.EXPECT()
-
-		getExpect := expect.Get
-		getExpect("fqdn").Return("", assert.AnError)
+		globalConfigMock := newMockGlobalConfigValueGetter(t)
+		globalConfigMock.EXPECT().Get(mock.Anything, "fqdn").Return("", assert.AnError)
 
 		generator := hostAliasGenerator{
 			globalConfig: globalConfigMock,
 		}
 
 		// when
-		_, err := generator.Generate()
+		_, err := generator.Generate(context.TODO())
 
 		// then
 		require.Error(t, err)
@@ -103,20 +100,18 @@ func Test_hostAliasGenerator_Generate(t *testing.T) {
 
 	t.Run("should fail on query internalIP flag error", func(t *testing.T) {
 		// given
-		globalConfigMock := newMockRegistryContext(t)
-		expect := globalConfigMock.EXPECT()
-
-		getExpect := expect.Get
 		fqdn := "ecosystem.cloudogu.com"
-		getExpect("fqdn").Return(fqdn, nil)
-		getExpect("k8s/use_internal_ip").Return("", assert.AnError)
+
+		globalConfigMock := newMockGlobalConfigValueGetter(t)
+		globalConfigMock.EXPECT().Get(mock.Anything, "fqdn").Return(fqdn, nil)
+		globalConfigMock.EXPECT().Get(mock.Anything, "k8s/use_internal_ip").Return("", assert.AnError)
 
 		generator := hostAliasGenerator{
 			globalConfig: globalConfigMock,
 		}
 
 		// when
-		_, err := generator.Generate()
+		_, err := generator.Generate(context.TODO())
 
 		// then
 		require.Error(t, err)
@@ -125,20 +120,18 @@ func Test_hostAliasGenerator_Generate(t *testing.T) {
 
 	t.Run("should fail on parse internalIP flag error", func(t *testing.T) {
 		// given
-		globalConfigMock := newMockRegistryContext(t)
-		expect := globalConfigMock.EXPECT()
-
-		getExpect := expect.Get
 		fqdn := "ecosystem.cloudogu.com"
-		getExpect("fqdn").Return(fqdn, nil)
-		getExpect("k8s/use_internal_ip").Return("no string boolean", nil)
+
+		globalConfigMock := newMockGlobalConfigValueGetter(t)
+		globalConfigMock.EXPECT().Get(mock.Anything, "fqdn").Return(fqdn, nil)
+		globalConfigMock.EXPECT().Get(mock.Anything, "k8s/use_internal_ip").Return("no string boolean", nil)
 
 		generator := hostAliasGenerator{
 			globalConfig: globalConfigMock,
 		}
 
 		// when
-		_, err := generator.Generate()
+		_, err := generator.Generate(context.TODO())
 
 		// then
 		require.Error(t, err)
@@ -147,21 +140,19 @@ func Test_hostAliasGenerator_Generate(t *testing.T) {
 
 	t.Run("should fail on query internalIP error", func(t *testing.T) {
 		// given
-		globalConfigMock := newMockRegistryContext(t)
-		expect := globalConfigMock.EXPECT()
-
-		getExpect := expect.Get
 		fqdn := "ecosystem.cloudogu.com"
-		getExpect("fqdn").Return(fqdn, nil)
-		getExpect("k8s/use_internal_ip").Return("true", nil)
-		getExpect("k8s/internal_ip").Return("", assert.AnError)
+
+		globalConfigMock := newMockGlobalConfigValueGetter(t)
+		globalConfigMock.EXPECT().Get(mock.Anything, "fqdn").Return(fqdn, nil)
+		globalConfigMock.EXPECT().Get(mock.Anything, "k8s/use_internal_ip").Return("true", nil)
+		globalConfigMock.EXPECT().Get(mock.Anything, "k8s/internal_ip").Return("", assert.AnError)
 
 		generator := hostAliasGenerator{
 			globalConfig: globalConfigMock,
 		}
 
 		// when
-		_, err := generator.Generate()
+		_, err := generator.Generate(context.TODO())
 
 		// then
 		require.Error(t, err)
@@ -170,21 +161,19 @@ func Test_hostAliasGenerator_Generate(t *testing.T) {
 
 	t.Run("should fail on parse internalIP error", func(t *testing.T) {
 		// given
-		globalConfigMock := newMockRegistryContext(t)
-		expect := globalConfigMock.EXPECT()
-
-		getExpect := expect.Get
 		fqdn := "ecosystem.cloudogu.com"
-		getExpect("fqdn").Return(fqdn, nil)
-		getExpect("k8s/use_internal_ip").Return("true", nil)
-		getExpect("k8s/internal_ip").Return("fdsd2131", nil)
+
+		globalConfigMock := newMockGlobalConfigValueGetter(t)
+		globalConfigMock.EXPECT().Get(mock.Anything, "fqdn").Return(fqdn, nil)
+		globalConfigMock.EXPECT().Get(mock.Anything, "k8s/use_internal_ip").Return("true", nil)
+		globalConfigMock.EXPECT().Get(mock.Anything, "k8s/internal_ip").Return("fdsd2131", nil)
 
 		generator := hostAliasGenerator{
 			globalConfig: globalConfigMock,
 		}
 
 		// when
-		_, err := generator.Generate()
+		_, err := generator.Generate(context.TODO())
 
 		// then
 		require.Error(t, err)
@@ -193,22 +182,19 @@ func Test_hostAliasGenerator_Generate(t *testing.T) {
 
 	t.Run("should fail on query additional hosts error", func(t *testing.T) {
 		// given
-		globalConfigMock := newMockRegistryContext(t)
-		expect := globalConfigMock.EXPECT()
-
-		getExpect := expect.Get
 		fqdn := "ecosystem.cloudogu.com"
-		getExpect("fqdn").Return(fqdn, nil)
-		getExpect("k8s/use_internal_ip").Return("false", nil)
 
-		expect.GetAll().Return(nil, assert.AnError)
+		globalConfigMock := newMockGlobalConfigValueGetter(t)
+		globalConfigMock.EXPECT().Get(mock.Anything, "fqdn").Return(fqdn, nil)
+		globalConfigMock.EXPECT().Get(mock.Anything, "k8s/use_internal_ip").Return("false", nil)
+		globalConfigMock.EXPECT().GetAll(mock.Anything).Return(nil, assert.AnError)
 
 		generator := hostAliasGenerator{
 			globalConfig: globalConfigMock,
 		}
 
 		// when
-		_, err := generator.Generate()
+		_, err := generator.Generate(context.TODO())
 
 		// then
 		require.Error(t, err)
