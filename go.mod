@@ -78,5 +78,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
-
-replace github.com/cloudogu/k8s-registry-lib v0.2.0 => github.com/cloudogu/k8s-registry-lib v0.0.0-20240621115501-ef9dfeea39cf
