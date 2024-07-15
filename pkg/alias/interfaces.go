@@ -1,8 +1,10 @@
 package alias
 
-import "context"
+import (
+	"context"
+	"github.com/cloudogu/k8s-registry-lib/config"
+)
 
-type globalConfigValueGetter interface {
-	Get(ctx context.Context, key string) (string, error)
-	GetAll(ctx context.Context) (map[string]string, error)
+type globalConfigGetter interface {
+	Get(ctx context.Context) (config.GlobalConfig, error)
 }
