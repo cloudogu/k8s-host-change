@@ -90,10 +90,7 @@ func (d *HostAliasGenerator) getGeneratorConfig(ctx context.Context) (*generator
 		}
 	}
 
-	hostsConfig.additionalHosts, err = d.retrieveAdditionalHosts(globalCfg)
-	if err != nil {
-		return nil, err
-	}
+	hostsConfig.additionalHosts = d.retrieveAdditionalHosts(globalCfg)
 
 	return hostsConfig, nil
 }
@@ -135,7 +132,7 @@ func (d *HostAliasGenerator) getInternalIP(globalCfg config.GlobalConfig) (net.I
 	return ip, nil
 }
 
-func (d *HostAliasGenerator) retrieveAdditionalHosts(globalCfg config.GlobalConfig) (map[string]string, error) {
+func (d *HostAliasGenerator) retrieveAdditionalHosts(globalCfg config.GlobalConfig) map[string]string {
 	globalCfgEntries := globalCfg.GetAll()
 
 	additionalHosts := map[string]string{}
@@ -146,5 +143,5 @@ func (d *HostAliasGenerator) retrieveAdditionalHosts(globalCfg config.GlobalConf
 		}
 	}
 
-	return additionalHosts, nil
+	return additionalHosts
 }
