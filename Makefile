@@ -2,8 +2,8 @@
 ARTIFACT_ID=k8s-host-change
 VERSION=0.3.2
 
-GOTAG?=1.20.2
-MAKEFILES_VERSION=9.0.1
+GOTAG?=1.22.4
+MAKEFILES_VERSION=9.0.5
 
 IMAGE=cloudogu/${ARTIFACT_ID}:${VERSION}
 
@@ -17,7 +17,7 @@ include build/make/variables.mk
 GO_BUILD_FLAGS=-mod=vendor -a -tags netgo,osusergo $(LDFLAGS) -o $(BINARY)
 # remove DWARF symbol table and strip other symbols to shave ~13 MB from binary
 ADDITIONAL_LDFLAGS=-extldflags -static -w -s
-LINT_VERSION?=v1.52.1
+LINT_VERSION?=v1.58.2
 
 include build/make/self-update.mk
 include build/make/dependencies-gomod.mk

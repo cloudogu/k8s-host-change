@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"github.com/cloudogu/k8s-registry-lib/repository"
 	"os"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/cloudogu/k8s-host-change/pkg/alias"
 	"github.com/cloudogu/k8s-host-change/pkg/hosts"
 	"github.com/cloudogu/k8s-host-change/pkg/initializer"
 	"github.com/cloudogu/k8s-host-change/pkg/logging"
@@ -35,12 +37,14 @@ func run() error {
 		return err
 	}
 
-	cesReg, err := init.CreateCesRegistry()
+	globalConfigRepo := repository.NewGlobalConfigRepository(clientSet.CoreV1().ConfigMaps(namespace))
 	if err != nil {
 		return err
 	}
 
-	updater := hosts.NewHostAliasUpdater(clientSet, cesReg)
+	hostGenerator := alias.NewHostAliasGenerator(globalConfigRepo)
+
+	updater := hosts.NewHostAliasUpdater(clientSet, hostGenerator)
 	err = updater.UpdateHosts(context.Background(), namespace)
 	if err != nil {
 		return err
