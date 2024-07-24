@@ -1,8 +1,6 @@
 module github.com/cloudogu/k8s-host-change
 
-go 1.22.0
-
-toolchain go1.22.4
+go 1.22.4
 
 require (
 	github.com/bombsimon/logrusr/v2 v2.0.1
