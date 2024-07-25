@@ -4,5 +4,5 @@ job:
     logLevel: info
   image:
     repository: cloudogu/k8s-host-change
-    tag: 0.3.2
+    tag: 0.4.0
   imagePullPolicy: IfNotPresent
