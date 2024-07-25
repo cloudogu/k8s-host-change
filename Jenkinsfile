@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('github.com/cloudogu/ces-build-lib@1.68.0')
+@Library('github.com/cloudogu/ces-build-lib@2.2.1')
 import com.cloudogu.ces.cesbuildlib.*
 
 // Creating necessary git objects
@@ -10,7 +10,7 @@ git.committerEmail = 'cesmarvin@cloudogu.com'
 gitflow = new GitFlow(this, git)
 github = new GitHub(this, git)
 changelog = new Changelog(this)
-goVersion = "1.21"
+goVersion = "1.22.4"
 makefile = new Makefile(this)
 
 // Configuration of repository

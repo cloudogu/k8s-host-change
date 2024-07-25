@@ -105,37 +105,3 @@ func Test_initializer_CreateClientSet(t *testing.T) {
 		require.Error(t, err)
 	})
 }
-
-func Test_initializer_CreateCesRegistry(t *testing.T) {
-	t.Run("should fail to create registry", func(t *testing.T) {
-		// given
-		sut := New()
-		prevValue, present := os.LookupEnv(namespaceEnvName)
-		defer resetEnv(t, namespaceEnvName, prevValue, present)
-		err := os.Setenv(namespaceEnvName, "(!)//=)!%(?=(")
-		require.NoError(t, err)
-
-		// when
-		actual, err := sut.CreateCesRegistry()
-
-		// then
-		require.Error(t, err)
-		assert.Nil(t, actual)
-		assert.ErrorContains(t, err, "parse \"http://etcd.(!)//=)!%(?=(.svc.cluster.local:4001\": invalid URL escape \"%(\"")
-	})
-	t.Run("should create registry", func(t *testing.T) {
-		// given
-		sut := New()
-		prevValue, present := os.LookupEnv(namespaceEnvName)
-		defer resetEnv(t, namespaceEnvName, prevValue, present)
-		err := os.Setenv(namespaceEnvName, "ces")
-		require.NoError(t, err)
-
-		// when
-		actual, err := sut.CreateCesRegistry()
-
-		// then
-		require.NoError(t, err)
-		assert.NotNil(t, actual)
-	})
-}

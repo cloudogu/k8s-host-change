@@ -8,32 +8,30 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/cloudogu/cesapp-lib/registry"
-	"github.com/cloudogu/k8s-host-change/pkg/alias"
 	"github.com/cloudogu/k8s-host-change/pkg/deployment"
 	"github.com/cloudogu/k8s-host-change/pkg/dogu"
 )
 
-type defaultHostAliasUpdater struct {
+type DefaultHostAliasUpdater struct {
 	generator hostAliasGenerator
 	fetcher   doguDeploymentFetcher
 	updater   deploymentUpdater
 }
 
-// NewHostAliasUpdater is used to create a new instance of defaultHostAliasUpdater.
-var NewHostAliasUpdater = func(clientSet kubernetes.Interface, cesReg registry.Registry) HostAliasUpdater {
-	return &defaultHostAliasUpdater{
-		generator: alias.NewHostAliasGenerator(cesReg.GlobalConfig()),
+// NewHostAliasUpdater is used to create a new instance of DefaultHostAliasUpdater.
+func NewHostAliasUpdater(clientSet kubernetes.Interface, generator hostAliasGenerator) *DefaultHostAliasUpdater {
+	return &DefaultHostAliasUpdater{
+		generator: generator,
 		fetcher:   dogu.NewDeploymentFetcher(clientSet),
 		updater:   deployment.NewUpdater(clientSet),
 	}
 }
 
 // UpdateHosts updates all dogu deployments with host information like fqdn, internal ip and additional hosts from ces registry.
-func (hau *defaultHostAliasUpdater) UpdateHosts(ctx context.Context, namespace string) error {
+func (hau *DefaultHostAliasUpdater) UpdateHosts(ctx context.Context, namespace string) error {
 	logger := log.FromContext(ctx)
 	logger.Info("Update host entries in dogu deployments")
-	hostAliases, err := hau.generator.Generate()
+	hostAliases, err := hau.generator.Generate(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to generate host aliases: %w", err)
 	}
@@ -51,7 +49,7 @@ func (hau *defaultHostAliasUpdater) UpdateHosts(ctx context.Context, namespace s
 	return nil
 }
 
-func (hau *defaultHostAliasUpdater) updateOrRollback(ctx context.Context, namespace string, hostAliases []corev1.HostAlias) error {
+func (hau *DefaultHostAliasUpdater) updateOrRollback(ctx context.Context, namespace string, hostAliases []corev1.HostAlias) error {
 	logger := log.FromContext(ctx)
 	logger.Info("Fetch all dogu deployments")
 	deployments, err := hau.fetcher.FetchAll(ctx, namespace)
@@ -80,7 +78,7 @@ func (hau *defaultHostAliasUpdater) updateOrRollback(ctx context.Context, namesp
 	return nil
 }
 
-func (hau *defaultHostAliasUpdater) rollback(ctx context.Context, namespace string, previousHostAliases map[string][]corev1.HostAlias) error {
+func (hau *DefaultHostAliasUpdater) rollback(ctx context.Context, namespace string, previousHostAliases map[string][]corev1.HostAlias) error {
 	deployments, err := hau.fetcher.FetchAll(ctx, namespace)
 	if err != nil {
 		return fmt.Errorf("failed to fetch dogu deployments on rollback: %w", err)
