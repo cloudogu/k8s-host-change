@@ -3,6 +3,7 @@ job:
     stage: production
     logLevel: info
   image:
+    registry: docker.io
     repository: cloudogu/k8s-host-change
     tag: 0.4.0
   imagePullPolicy: IfNotPresent
