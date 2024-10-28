@@ -6,5 +6,6 @@ patches:
   values.yaml:
     job:
       image:
-        repository: "{{ registryFrom .images.job }}/{{ repositoryFrom .images.job }}"
+        registry: "{{ registryFrom .images.job }}"
+        repository: "{{ repositoryFrom .images.job }}"
         tag: "{{ tagFrom .images.job }}"
