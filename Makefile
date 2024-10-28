@@ -1,9 +1,9 @@
 # Set these to the desired values
 ARTIFACT_ID=k8s-host-change
-VERSION=0.5.0
+VERSION=0.6.0
 
 GOTAG?=1.22.4
-MAKEFILES_VERSION=9.0.5
+MAKEFILES_VERSION=9.3.2
 
 IMAGE=cloudogu/${ARTIFACT_ID}:${VERSION}
 
@@ -63,7 +63,8 @@ helm-values-update-image-version: $(BINARY_YQ)
 helm-values-replace-image-repo: $(BINARY_YQ)
 	@if [[ ${STAGE} == "development" ]]; then \
       		echo "Setting dev image repo in target values.yaml!" ;\
-    		$(BINARY_YQ) -i e ".job.image.repository=\"${IMAGE_DEV}\"" "${K8S_COMPONENT_TARGET_VALUES}" ;\
+    		$(BINARY_YQ) -i e ".job.image.registry=\"$(shell echo '${IMAGE_DEV}' | sed 's/\([^\/]*\)\/\(.*\)/\1/')\"" ${K8S_COMPONENT_TARGET_VALUES} ;\
+    		$(BINARY_YQ) -i e ".job.image.repository=\"$(shell echo '${IMAGE_DEV}' | sed 's/\([^\/]*\)\/\(.*\)/\2/')\"" ${K8S_COMPONENT_TARGET_VALUES} ;\
     	fi
 
 .PHONY: template-stage

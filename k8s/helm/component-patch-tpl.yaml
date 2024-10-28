@@ -1,10 +1,11 @@
 apiVersion: v1
 values:
   images:
-    job: cloudogu/k8s-host-change:0.4.0
+    job: cloudogu/k8s-host-change:0.6.0
 patches:
   values.yaml:
     job:
       image:
-        repository: "{{ registryFrom .images.job }}/{{ repositoryFrom .images.job }}"
+        registry: "{{ registryFrom .images.job }}"
+        repository: "{{ repositoryFrom .images.job }}"
         tag: "{{ tagFrom .images.job }}"
