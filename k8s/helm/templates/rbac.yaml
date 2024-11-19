@@ -13,6 +13,15 @@ rules:
   - list
   - get
   - update
+- apiGroups:
+    - ""
+  resources:
+    - configmaps
+  resourceNames:
+    - "global-config"
+  verbs:
+    - list
+    - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
