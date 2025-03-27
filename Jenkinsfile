@@ -10,7 +10,7 @@ git.committerEmail = 'cesmarvin@cloudogu.com'
 gitflow = new GitFlow(this, git)
 github = new GitHub(this, git)
 changelog = new Changelog(this)
-goVersion = "1.22.4"
+goVersion = "1.24.1"
 makefile = new Makefile(this)
 
 // Configuration of repository
@@ -77,10 +77,10 @@ node('docker') {
 
         stage('Trivy scan') {
             Docker docker = new Docker(this)
-            String dockerImage = docker.build("cloudogu/${repositoryName}:ci-build")
+            def dockerImage = docker.build("cloudogu/${repositoryName}:ci-build")
 
             Trivy trivy = new Trivy(this)
-            trivy.scanImage(dockerImage, TrivySeverityLevel.CRITICAL, TrivyScanStrategy.UNSTABLE)
+            trivy.scanImage("cloudogu/${repositoryName}:ci-build", TrivySeverityLevel.CRITICAL, TrivyScanStrategy.UNSTABLE)
             trivy.saveFormattedTrivyReport(TrivyScanFormat.TABLE)
             trivy.saveFormattedTrivyReport(TrivyScanFormat.JSON)
             trivy.saveFormattedTrivyReport(TrivyScanFormat.HTML)
