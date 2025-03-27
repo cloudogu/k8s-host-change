@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('github.com/cloudogu/ces-build-lib@3.0.0')
+@Library('github.com/cloudogu/ces-build-lib@4.1.1')
 import com.cloudogu.ces.cesbuildlib.*
 
 // Creating necessary git objects
@@ -73,6 +73,17 @@ node('docker') {
 
         stage('SonarQube') {
             stageStaticAnalysisSonarQube()
+        }
+
+        stage('Trivy scan') {
+            Docker docker = new Docker(this)
+            String dockerImage = docker.build("cloudogu/${repositoryName}:ci-build")
+
+            Trivy trivy = new Trivy(this)
+            trivy.scanImage(dockerImage, TrivySeverityLevel.CRITICAL, TrivyScanStrategy.UNSTABLE)
+            trivy.saveFormattedTrivyReport(TrivyScanFormat.TABLE)
+            trivy.saveFormattedTrivyReport(TrivyScanFormat.JSON)
+            trivy.saveFormattedTrivyReport(TrivyScanFormat.HTML)
         }
 
         stageAutomaticRelease()
