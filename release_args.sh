@@ -9,8 +9,8 @@ update_versions_modify_files() {
   valuesYAML=k8s/helm/values.yaml
   componentPatchTplYAML=k8s/helm/component-patch-tpl.yaml
 
-  yq -i ".job.image.tag = \"${newReleaseVersion}\"" "${valuesYAML}"
-  yq -i ".values.images.job = \"cloudogu/k8s-host-change:${newReleaseVersion}\" " "${componentPatchTplYAML}"
+  ./.bin/yq -i ".job.image.tag = \"${newReleaseVersion}\"" "${valuesYAML}"
+  ./.bin/yq -i ".values.images.job = \"cloudogu/k8s-host-change:${newReleaseVersion}\" " "${componentPatchTplYAML}"
 }
 
 update_versions_stage_modified_files() {
