@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.7.1] - 2025-03-28
+### Removed
+- [#22] etcd-dependency from helm-chart 
+
 ## [v0.7.0] - 2024-11-19
 ### Added
 - [#20] Add RBAC permission to read global-config

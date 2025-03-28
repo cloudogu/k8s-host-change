@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.22.4 as builder
+FROM golang:1.24.1 AS builder
 
 WORKDIR /workspace
 
@@ -33,7 +33,7 @@ RUN make compile-generic
 FROM gcr.io/distroless/static:nonroot
 LABEL maintainer="hello@cloudogu.com" \
       NAME="k8s-host-change" \
-      VERSION="0.7.0"
+      VERSION="0.7.1"
 
 WORKDIR /
 
