@@ -1,6 +1,6 @@
 # Set these to the desired values
 ARTIFACT_ID=k8s-host-change
-VERSION=0.7.0
+VERSION=0.7.1
 
 GOTAG?=1.24.1
 MAKEFILES_VERSION=9.8.0
