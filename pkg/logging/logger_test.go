@@ -8,18 +8,12 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	ctrl "sigs.k8s.io/controller-runtime"
-
-	"github.com/cloudogu/cesapp-lib/core"
 )
 
 func TestConfigureLogger(t *testing.T) {
 	originalControllerLogger := ctrl.Log
-	originalLibraryLogger := core.GetLogger()
 	defer func() {
 		ctrl.Log = originalControllerLogger
-		core.GetLogger = func() core.Logger {
-			return originalLibraryLogger
-		}
 	}()
 
 	t.Run("create logger with no log level set in env -> should use default", func(t *testing.T) {
@@ -41,7 +35,6 @@ func TestConfigureLogger(t *testing.T) {
 		err := ConfigureLogger()
 
 		// then
-		core.GetLogger().Info("test")
 		assert.NoError(t, err)
 	})
 

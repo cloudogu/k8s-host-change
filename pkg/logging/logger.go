@@ -8,8 +8,6 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/sirupsen/logrus"
 	ctrl "sigs.k8s.io/controller-runtime"
-
-	"github.com/cloudogu/cesapp-lib/core"
 )
 
 const logLevelEnvName = "LOG_LEVEL"
@@ -109,12 +107,6 @@ func ConfigureLogger() error {
 
 	// set logr logger as controller logger
 	ctrl.SetLogger(logrusrLogger)
-
-	// set custom logger implementation to cesapp-lib logger
-	cesappLibLogger := libraryLogger{name: "cesapp-lib", logger: logrusrLogger.GetSink()}
-	core.GetLogger = func() core.Logger {
-		return &cesappLibLogger
-	}
 
 	return nil
 }
