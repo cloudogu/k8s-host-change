@@ -25,5 +25,7 @@ spec:
           image: "{{ .Values.job.image.registry }}/{{ .Values.job.image.repository }}:{{ .Values.job.image.tag }}"
           name: k8s-host-change
           imagePullPolicy: {{ .Values.job.imagePullPolicy | default "IfNotPresent" }}
+          resources:
+            {{- toYaml .Values.job.resources | nindent 12 }}
       restartPolicy: Never
       serviceAccountName: {{ include "k8s-host-change.name" . }}

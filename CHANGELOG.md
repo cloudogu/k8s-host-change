@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- [#24] Set sensible resource requests and limits
+
 ## [v0.7.0] - 2024-11-19
 ### Added
 - [#20] Add RBAC permission to read global-config

@@ -10,3 +10,9 @@ job:
     repository: cloudogu/k8s-host-change
     tag: 0.7.0
   imagePullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 15m
+      memory: 105M
+    limits:
+      memory: 105M
