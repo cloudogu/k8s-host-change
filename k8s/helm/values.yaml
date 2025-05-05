@@ -8,5 +8,11 @@ job:
   image:
     registry: docker.io
     repository: cloudogu/k8s-host-change
-    tag: 0.7.1
+    tag: 0.7.2
   imagePullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 15m
+      memory: 105M
+    limits:
+      memory: 105M
