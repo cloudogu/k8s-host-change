@@ -8,7 +8,7 @@ job:
   image:
     registry: docker.io
     repository: cloudogu/k8s-host-change
-    tag: 0.7.2
+    tag: 0.8.0
   imagePullPolicy: IfNotPresent
   resources:
     requests:
