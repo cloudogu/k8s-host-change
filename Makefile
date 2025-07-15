@@ -17,7 +17,6 @@ include build/make/variables.mk
 GO_BUILD_FLAGS=-mod=vendor -a -tags netgo,osusergo $(LDFLAGS) -o $(BINARY)
 # remove DWARF symbol table and strip other symbols to shave ~13 MB from binary
 ADDITIONAL_LDFLAGS=-extldflags -static -w -s
-LINT_VERSION?=v1.64.8
 
 include build/make/self-update.mk
 include build/make/dependencies-gomod.mk
