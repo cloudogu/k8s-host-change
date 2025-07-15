@@ -39,7 +39,7 @@ prerelease_namespace() {
     # Output the new values for debugging
     echo "PRERELEASE_NAME Dockerfile: ${PRERELEASE_NAME}"
     echo "PRERELEASE_VERSION Dockerfile: ${PRERELEASE_VERSION}"
-
+    
     # Only replace NAME= and VERSION= and only inside the LABEL block
     # This assumes LABEL block is between 'LABEL' and first non-indented line
     sed -i '/^LABEL/,/^[^[:space:]]/ {
