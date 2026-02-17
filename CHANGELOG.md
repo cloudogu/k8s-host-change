@@ -7,7 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Security
 - [#28] Fix Golang stdlib CVE-2025-68121
-- 
 ## [v0.8.0] - 2025-07-15
 ### Added
 - [#26] add metadata mapping for logLevel
