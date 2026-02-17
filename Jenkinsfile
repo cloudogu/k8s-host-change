@@ -10,7 +10,7 @@ git.committerEmail = 'cesmarvin@cloudogu.com'
 gitflow = new GitFlow(this, git)
 github = new GitHub(this, git)
 changelog = new Changelog(this)
-goVersion = "1.24.1"
+goVersion = "1.26.0"
 makefile = new Makefile(this)
 
 // Configuration of repository
