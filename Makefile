@@ -1,9 +1,10 @@
 # Set these to the desired values
 ARTIFACT_ID=k8s-host-change
-VERSION=0.8.0
+VERSION=0.8.1
 
-GOTAG?=1.24.1
-MAKEFILES_VERSION=10.2.0
+GOTAG?=1.26.0
+MAKEFILES_VERSION=10.6.0
+LINT_VERSION?=v2.9.0
 
 IMAGE=cloudogu/${ARTIFACT_ID}:${VERSION}
 
