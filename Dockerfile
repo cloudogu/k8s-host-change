@@ -33,7 +33,7 @@ RUN make compile-generic
 FROM gcr.io/distroless/static:nonroot
 LABEL maintainer="hello@cloudogu.com" \
       NAME="k8s-host-change" \
-      VERSION="0.8.0"
+      VERSION="0.8.1"
 
 WORKDIR /
 
